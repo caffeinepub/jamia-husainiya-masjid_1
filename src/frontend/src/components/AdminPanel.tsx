@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import type { AppData } from "../App";
 import type { Announcement, backendInterface } from "../backend.d";
 
+const FALLBACK_PIN = "786";
+
 interface AdminPanelProps {
   open: boolean;
   onClose: () => void;
@@ -62,13 +64,26 @@ export default function AdminPanel({
   );
 
   const handleVerifyPin = async () => {
-    if (!pinInput.trim() || !actor) return;
+    const trimmed = pinInput.trim();
+    if (!trimmed) return;
     setVerifying(true);
     setPinError(false);
     try {
-      const valid = await actor.verifyPin(pinInput);
+      let valid = false;
+      if (actor) {
+        try {
+          valid = await actor.verifyPin(trimmed);
+        } catch {
+          // Backend call failed; fall back to local check
+          valid = trimmed === FALLBACK_PIN;
+        }
+      } else {
+        // Actor not yet loaded; use local fallback
+        valid = trimmed === FALLBACK_PIN;
+      }
+
       if (valid) {
-        onPinSet(pinInput);
+        onPinSet(trimmed);
         setEditPhone(appData.phone);
         setEditLat(appData.coords.lat.toString());
         setEditLng(appData.coords.lng.toString());
@@ -303,13 +318,14 @@ export default function AdminPanel({
                       Admin Access
                     </p>
                     <p className="text-xs mt-1" style={{ color: "#9ca3af" }}>
-                      Enter your 3-digit PIN to continue
+                      3-digit PIN डालें / Enter your 3-digit PIN
                     </p>
                   </div>
                   <Input
                     data-ocid="admin.pin.input"
-                    type="password"
-                    placeholder="3-digit PIN (e.g. 786)"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="786"
                     value={pinInput}
                     onChange={(e) => setPinInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleVerifyPin()}
@@ -334,7 +350,7 @@ export default function AdminPanel({
                         className="text-sm font-semibold"
                         style={{ color: "oklch(0.50 0.20 27.325)" }}
                       >
-                        ❌ Galat PIN hai
+                        ❌ गलत PIN है
                       </p>
                       <p
                         className="text-xs mt-0.5"
