@@ -16,22 +16,24 @@ export default function MapScreen({
   const directionsUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
 
   return (
-    <div data-ocid="map.page" className="flex flex-col h-full overflow-hidden">
+    <div
+      data-ocid="map.page"
+      className="flex flex-col"
+      style={{ minHeight: "100%", background: "#f9fafb" }}
+    >
       {/* Header */}
       <div
-        className="flex-shrink-0 flex items-center justify-between px-5 py-4 relative overflow-hidden"
+        className="flex-shrink-0 flex items-center justify-between px-5 py-4"
         style={{
-          background:
-            "linear-gradient(135deg, oklch(0.40 0.13 147) 0%, oklch(0.30 0.10 147) 100%)",
+          background: "oklch(0.40 0.13 147)",
           borderBottom: "2px solid oklch(0.72 0.12 78)",
         }}
       >
-        <div className="absolute inset-0 islamic-pattern opacity-15 pointer-events-none" />
-        <div className="relative z-10">
+        <div>
           <h1 className="text-white font-bold text-lg">Location</h1>
           <p
             className="text-xs mt-0.5"
-            style={{ color: "rgba(255,255,255,0.7)" }}
+            style={{ color: "rgba(255,255,255,0.75)" }}
           >
             Find us at Margoobpur
           </p>
@@ -40,10 +42,10 @@ export default function MapScreen({
           type="button"
           data-ocid="map.admin.open_modal_button"
           onClick={onOpenAdmin}
-          className="relative z-10 p-2 rounded-xl transition-colors"
+          className="p-2 rounded-xl transition-colors"
           style={{
-            color: "rgba(255,255,255,0.65)",
-            background: "rgba(255,255,255,0.1)",
+            color: "rgba(255,255,255,0.75)",
+            background: "rgba(255,255,255,0.15)",
           }}
           aria-label="Open admin panel"
         >
@@ -53,15 +55,15 @@ export default function MapScreen({
 
       {/* Content */}
       <div
-        className="flex-1 phone-content px-4 py-4 space-y-4"
-        style={{ background: "oklch(0.97 0.01 147)" }}
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+        style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
       >
         {/* Map iframe */}
         <div
           className="rounded-2xl overflow-hidden"
           style={{
             border: "2px solid oklch(0.72 0.12 78)",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
           }}
         >
           {isLoading ? (
@@ -78,10 +80,7 @@ export default function MapScreen({
                     borderTopColor: "transparent",
                   }}
                 />
-                <p
-                  className="text-xs"
-                  style={{ color: "oklch(0.55 0.02 240)" }}
-                >
+                <p className="text-xs" style={{ color: "#9ca3af" }}>
                   Loading map...
                 </p>
               </div>
@@ -108,10 +107,9 @@ export default function MapScreen({
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full rounded-2xl py-3.5 font-bold text-sm transition-all duration-200 active:scale-95"
           style={{
-            background:
-              "linear-gradient(135deg, oklch(0.72 0.12 78) 0%, oklch(0.62 0.10 78) 100%)",
+            background: "oklch(0.72 0.12 78)",
             color: "oklch(0.22 0.08 147)",
-            boxShadow: "0 4px 12px rgba(200,169,81,0.3)",
+            boxShadow: "0 4px 12px rgba(200,169,81,0.28)",
             border: "1px solid oklch(0.55 0.09 78)",
             textDecoration: "none",
           }}
@@ -125,7 +123,7 @@ export default function MapScreen({
           className="rounded-2xl p-4"
           style={{
             background: "white",
-            border: "1px solid oklch(0.88 0.02 147)",
+            border: "1px solid #e5e7eb",
             boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
           }}
         >
@@ -135,21 +133,17 @@ export default function MapScreen({
           >
             🕌 Jamia Husainiya Masjid
           </p>
-          <p className="text-sm" style={{ color: "oklch(0.35 0.02 240)" }}>
+          <p className="text-sm" style={{ color: "#374151" }}>
             Masjid Road, Margoobpur,
             <br />
             Punjab, Pakistan
           </p>
-          <p
-            className="text-xs mt-2 font-mono"
-            style={{ color: "oklch(0.55 0.02 240)" }}
-          >
+          <p className="text-xs mt-2 font-mono" style={{ color: "#9ca3af" }}>
             {coords.lat.toFixed(4)}° N, {coords.lng.toFixed(4)}° E
           </p>
         </div>
 
-        {/* Footer */}
-        <div className="pb-2" />
+        <div className="pb-4" />
       </div>
     </div>
   );

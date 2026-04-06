@@ -20,23 +20,22 @@ export default function ContactScreen({
   return (
     <div
       data-ocid="contact.page"
-      className="flex flex-col h-full overflow-hidden"
+      className="flex flex-col"
+      style={{ minHeight: "100%", background: "#f9fafb" }}
     >
       {/* Header */}
       <div
-        className="flex-shrink-0 flex items-center justify-between px-5 py-4 relative overflow-hidden"
+        className="flex-shrink-0 flex items-center justify-between px-5 py-4"
         style={{
-          background:
-            "linear-gradient(135deg, oklch(0.40 0.13 147) 0%, oklch(0.30 0.10 147) 100%)",
+          background: "oklch(0.40 0.13 147)",
           borderBottom: "2px solid oklch(0.72 0.12 78)",
         }}
       >
-        <div className="absolute inset-0 islamic-pattern opacity-15 pointer-events-none" />
-        <div className="relative z-10">
+        <div>
           <h1 className="text-white font-bold text-lg">Contact Us</h1>
           <p
             className="text-xs mt-0.5"
-            style={{ color: "rgba(255,255,255,0.7)" }}
+            style={{ color: "rgba(255,255,255,0.75)" }}
           >
             Reach the mosque committee
           </p>
@@ -45,10 +44,10 @@ export default function ContactScreen({
           type="button"
           data-ocid="contact.admin.open_modal_button"
           onClick={onOpenAdmin}
-          className="relative z-10 p-2 rounded-xl transition-colors"
+          className="p-2 rounded-xl transition-colors"
           style={{
-            color: "rgba(255,255,255,0.65)",
-            background: "rgba(255,255,255,0.1)",
+            color: "rgba(255,255,255,0.75)",
+            background: "rgba(255,255,255,0.15)",
           }}
           aria-label="Open admin panel"
         >
@@ -58,8 +57,8 @@ export default function ContactScreen({
 
       {/* Content */}
       <div
-        className="flex-1 phone-content px-4 py-4 space-y-4"
-        style={{ background: "oklch(0.97 0.01 147)" }}
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+        style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
       >
         {/* Call Button */}
         <a
@@ -67,10 +66,9 @@ export default function ContactScreen({
           href={`tel:${phone}`}
           className="block w-full rounded-2xl py-4 text-center font-bold text-base transition-all duration-200 active:scale-95"
           style={{
-            background:
-              "linear-gradient(135deg, oklch(0.40 0.13 147) 0%, oklch(0.30 0.10 147) 100%)",
+            background: "oklch(0.40 0.13 147)",
             color: "white",
-            boxShadow: "0 4px 16px rgba(15,75,47,0.35)",
+            boxShadow: "0 4px 16px rgba(15,75,47,0.30)",
             border: "2px solid oklch(0.72 0.12 78)",
             textDecoration: "none",
           }}
@@ -84,11 +82,11 @@ export default function ContactScreen({
           className="rounded-2xl p-4 text-center"
           style={{
             background: "white",
-            border: "1px solid oklch(0.88 0.02 147)",
+            border: "1px solid #e5e7eb",
             boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
           }}
         >
-          <p className="text-xs mb-1" style={{ color: "oklch(0.55 0.02 240)" }}>
+          <p className="text-xs mb-1" style={{ color: "#9ca3af" }}>
             Phone Number
           </p>
           <p
@@ -104,7 +102,7 @@ export default function ContactScreen({
           className="rounded-2xl p-4"
           style={{
             background: "white",
-            border: "1px solid oklch(0.88 0.02 147)",
+            border: "1px solid #e5e7eb",
             boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
           }}
         >
@@ -122,10 +120,7 @@ export default function ContactScreen({
               Address
             </p>
           </div>
-          <p
-            className="text-sm leading-relaxed"
-            style={{ color: "oklch(0.35 0.02 240)" }}
-          >
+          <p className="text-sm leading-relaxed" style={{ color: "#374151" }}>
             Masjid Road, Margoobpur,
             <br />
             Punjab, Pakistan
@@ -137,7 +132,7 @@ export default function ContactScreen({
           className="rounded-2xl p-4"
           style={{
             background: "white",
-            border: "1px solid oklch(0.88 0.02 147)",
+            border: "1px solid #e5e7eb",
             boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
           }}
         >
@@ -155,7 +150,7 @@ export default function ContactScreen({
               Email
             </p>
           </div>
-          <p className="text-sm" style={{ color: "oklch(0.35 0.02 240)" }}>
+          <p className="text-sm" style={{ color: "#374151" }}>
             info@masjid-margoobpur.pk
           </p>
         </div>
@@ -169,7 +164,7 @@ export default function ContactScreen({
           className="flex items-center gap-3 rounded-2xl p-4 transition-all duration-200 active:scale-95"
           style={{
             background: "white",
-            border: "1px solid oklch(0.88 0.02 147)",
+            border: "1px solid #e5e7eb",
             boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
             textDecoration: "none",
           }}
@@ -187,33 +182,30 @@ export default function ContactScreen({
             >
               WhatsApp
             </p>
-            <p className="text-xs" style={{ color: "oklch(0.55 0.02 240)" }}>
+            <p className="text-xs" style={{ color: "#9ca3af" }}>
               Message us on WhatsApp
             </p>
           </div>
-          <ExternalLink size={14} style={{ color: "oklch(0.55 0.02 240)" }} />
+          <ExternalLink size={14} style={{ color: "#9ca3af" }} />
         </a>
 
-        {/* Footer */}
+        {/* Info card */}
         <div
           className="rounded-xl p-3 text-center"
           style={{
             background: "oklch(0.93 0.05 147)",
-            border: "1px solid oklch(0.88 0.02 147)",
+            border: "1px solid oklch(0.88 0.04 147)",
           }}
         >
           <p className="text-xs" style={{ color: "oklch(0.40 0.13 147)" }}>
             🕌 Jamia Husainiya Masjid Margoobpur
           </p>
-          <p
-            className="text-xs mt-0.5"
-            style={{ color: "oklch(0.55 0.02 240)" }}
-          >
+          <p className="text-xs mt-0.5" style={{ color: "#6b7280" }}>
             Open for all five daily prayers
           </p>
         </div>
 
-        <div className="pb-2" />
+        <div className="pb-4" />
       </div>
     </div>
   );

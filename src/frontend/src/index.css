@@ -25,31 +25,31 @@
     --radius: 0.75rem;
 
     /* Islamic Green palette */
-    --mosque-green: 0.4 0.13 147; /* #1A6B3A */
-    --mosque-green-dark: 0.3 0.1 147; /* #0F4B2F */
-    --mosque-green-deeper: 0.22 0.08 147; /* #0B3A24 */
-    --mosque-gold: 0.72 0.12 78; /* #C8A951 */
-    --mosque-gold-dark: 0.62 0.1 78; /* #A9893E */
+    --mosque-green: 0.4 0.13 147;
+    --mosque-green-dark: 0.3 0.1 147;
+    --mosque-green-deeper: 0.22 0.08 147;
+    --mosque-gold: 0.72 0.12 78;
+    --mosque-gold-dark: 0.62 0.1 78;
 
-    /* Semantic tokens mapped to Islamic theme */
-    --background: 0.95 0.01 230; /* #EEF1F4 page bg */
-    --foreground: 0.15 0.01 240; /* #1C1C1C text */
-    --card: 1 0 0; /* white */
+    /* Light theme tokens */
+    --background: 0.97 0.005 147;
+    --foreground: 0.15 0.01 240;
+    --card: 1 0 0;
     --card-foreground: 0.15 0.01 240;
     --popover: 1 0 0;
     --popover-foreground: 0.15 0.01 240;
-    --primary: 0.4 0.13 147; /* mosque green */
-    --primary-foreground: 1 0 0; /* white */
-    --secondary: 0.72 0.12 78; /* gold */
+    --primary: 0.4 0.13 147;
+    --primary-foreground: 1 0 0;
+    --secondary: 0.72 0.12 78;
     --secondary-foreground: 0.15 0.01 240;
-    --muted: 0.93 0.01 147;
+    --muted: 0.96 0.01 147;
     --muted-foreground: 0.45 0.02 240;
-    --accent: 0.72 0.12 78; /* gold */
+    --accent: 0.72 0.12 78;
     --accent-foreground: 0.15 0.01 240;
     --destructive: 0.577 0.245 27.325;
     --destructive-foreground: 1 0 0;
-    --border: 0.88 0.02 147;
-    --input: 0.88 0.02 147;
+    --border: 0.91 0.01 147;
+    --input: 0.91 0.01 147;
     --ring: 0.4 0.13 147;
     --chart-1: 0.646 0.222 41.116;
     --chart-2: 0.6 0.118 184.704;
@@ -71,12 +71,20 @@
   }
 
   html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
   body {
     @apply bg-background text-foreground;
     font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    background-color: #f9fafb;
   }
 
-  /* Smooth scrolling */
   * {
     scroll-behavior: smooth;
   }
@@ -88,7 +96,7 @@
   background-size: 60px 60px;
 }
 
-/* Phone frame scrollable content */
+/* Scrollable content — hide scrollbar but allow scrolling */
 .phone-content {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

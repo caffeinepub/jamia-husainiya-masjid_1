@@ -16,23 +16,22 @@ export default function NoticeScreen({
   return (
     <div
       data-ocid="notice.page"
-      className="flex flex-col h-full overflow-hidden"
+      className="flex flex-col"
+      style={{ minHeight: "100%", background: "#f9fafb" }}
     >
       {/* Header */}
       <div
-        className="flex-shrink-0 flex items-center justify-between px-5 py-4 relative overflow-hidden"
+        className="flex-shrink-0 flex items-center justify-between px-5 py-4"
         style={{
-          background:
-            "linear-gradient(135deg, oklch(0.40 0.13 147) 0%, oklch(0.30 0.10 147) 100%)",
+          background: "oklch(0.40 0.13 147)",
           borderBottom: "2px solid oklch(0.72 0.12 78)",
         }}
       >
-        <div className="absolute inset-0 islamic-pattern opacity-15 pointer-events-none" />
-        <div className="relative z-10">
+        <div>
           <h1 className="text-white font-bold text-lg">Announcements</h1>
           <p
             className="text-xs mt-0.5"
-            style={{ color: "rgba(255,255,255,0.7)" }}
+            style={{ color: "rgba(255,255,255,0.75)" }}
           >
             Mosque notices & updates
           </p>
@@ -41,10 +40,10 @@ export default function NoticeScreen({
           type="button"
           data-ocid="notice.admin.open_modal_button"
           onClick={onOpenAdmin}
-          className="relative z-10 p-2 rounded-xl transition-colors"
+          className="p-2 rounded-xl transition-colors"
           style={{
-            color: "rgba(255,255,255,0.65)",
-            background: "rgba(255,255,255,0.1)",
+            color: "rgba(255,255,255,0.75)",
+            background: "rgba(255,255,255,0.15)",
           }}
           aria-label="Open admin panel"
           title="Admin Panel"
@@ -55,8 +54,8 @@ export default function NoticeScreen({
 
       {/* Announcements list */}
       <div
-        className="flex-1 phone-content px-4 py-3 space-y-3"
-        style={{ background: "oklch(0.97 0.01 147)" }}
+        className="flex-1 overflow-y-auto px-4 py-3 space-y-3"
+        style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
       >
         {isLoading ? (
           <div data-ocid="notice.loading_state" className="space-y-3">
@@ -64,7 +63,7 @@ export default function NoticeScreen({
               <div
                 key={i}
                 className="rounded-2xl p-4 bg-white"
-                style={{ border: "1px solid oklch(0.88 0.02 147)" }}
+                style={{ border: "1px solid #e5e7eb" }}
               >
                 <Skeleton className="h-4 w-3/4 mb-2" />
                 <Skeleton className="h-3 w-full mb-1" />
@@ -89,10 +88,7 @@ export default function NoticeScreen({
             >
               No Announcements
             </p>
-            <p
-              className="text-xs text-center"
-              style={{ color: "oklch(0.55 0.02 240)" }}
-            >
+            <p className="text-xs text-center" style={{ color: "#9ca3af" }}>
               There are no notices at this time.
               <br />
               Check back later.
@@ -103,44 +99,43 @@ export default function NoticeScreen({
             <div
               key={ann.id.toString()}
               data-ocid={`notice.item.${index + 1}`}
-              className="rounded-2xl p-4"
+              className="rounded-2xl overflow-hidden"
               style={{
                 background: "white",
-                border: "1px solid oklch(0.88 0.02 147)",
+                border: "1px solid #e5e7eb",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
               }}
             >
-              {/* Gold top border accent */}
+              {/* Gold top accent bar */}
               <div
-                className="h-0.5 rounded-full mb-3 -mx-4 -mt-4 px-4 pt-3"
-                style={{ background: "oklch(0.72 0.12 78)" }}
+                style={{ height: "3px", background: "oklch(0.72 0.12 78)" }}
               />
-              <div className="flex items-start gap-2 mb-1">
-                <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: "oklch(0.93 0.05 147)" }}
-                >
-                  <Megaphone
-                    size={13}
-                    style={{ color: "oklch(0.40 0.13 147)" }}
-                  />
+              <div className="p-4">
+                <div className="flex items-start gap-2 mb-2">
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: "oklch(0.93 0.05 147)" }}
+                  >
+                    <Megaphone
+                      size={13}
+                      style={{ color: "oklch(0.40 0.13 147)" }}
+                    />
+                  </div>
+                  <h3
+                    className="font-bold text-sm leading-snug flex-1"
+                    style={{ color: "oklch(0.22 0.08 147)" }}
+                  >
+                    {ann.title}
+                  </h3>
                 </div>
-                <h3
-                  className="font-bold text-sm leading-snug flex-1"
-                  style={{ color: "oklch(0.22 0.08 147)" }}
+                <p
+                  className="text-xs leading-relaxed"
+                  style={{ color: "#6b7280" }}
                 >
-                  {ann.title}
-                </h3>
-              </div>
-              <p
-                className="text-xs leading-relaxed mt-2"
-                style={{ color: "oklch(0.35 0.02 240)" }}
-              >
-                {ann.body}
-              </p>
-              <div className="flex items-center justify-between mt-3">
+                  {ann.body}
+                </p>
                 <span
-                  className="inline-block text-xs px-2.5 py-1 rounded-full font-semibold"
+                  className="inline-block mt-3 text-xs px-2.5 py-1 rounded-full font-semibold"
                   style={{
                     background: "oklch(0.93 0.05 78)",
                     color: "oklch(0.50 0.10 78)",
@@ -154,7 +149,7 @@ export default function NoticeScreen({
           ))
         )}
 
-        <div className="pb-2" />
+        <div className="pb-4" />
       </div>
     </div>
   );
