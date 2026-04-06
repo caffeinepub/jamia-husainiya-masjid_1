@@ -1,79 +1,3 @@
-interface Member {
-  id: number;
-  name: string;
-  role: string;
-  arabicRole: string;
-  initials: string;
-  color: string;
-}
-
-const members: Member[] = [
-  {
-    id: 1,
-    name: "مولانا احمد صاحب",
-    role: "Head Imam",
-    arabicRole: "امام اعظم",
-    initials: "م ا",
-    color: "oklch(0.40 0.13 147)",
-  },
-  {
-    id: 2,
-    name: "حافظ محمد علی",
-    role: "Khatib",
-    arabicRole: "خطیب",
-    initials: "ح م",
-    color: "oklch(0.35 0.10 147)",
-  },
-  {
-    id: 3,
-    name: "قاری عبدالرحمن",
-    role: "Muezzin",
-    arabicRole: "مؤذن",
-    initials: "ق ع",
-    color: "oklch(0.45 0.13 160)",
-  },
-  {
-    id: 4,
-    name: "مولانا یوسف خان",
-    role: "Deputy Imam",
-    arabicRole: "نائب امام",
-    initials: "م ی",
-    color: "oklch(0.38 0.12 150)",
-  },
-  {
-    id: 5,
-    name: "حاجی عبداللہ صاحب",
-    role: "Committee President",
-    arabicRole: "صدر کمیٹی",
-    initials: "ح ع",
-    color: "oklch(0.50 0.10 78)",
-  },
-  {
-    id: 6,
-    name: "محمد اسلم چودھری",
-    role: "Secretary",
-    arabicRole: "سیکریٹری",
-    initials: "م ا",
-    color: "oklch(0.42 0.11 155)",
-  },
-  {
-    id: 7,
-    name: "قاری نوید احمد",
-    role: "Quran Teacher",
-    arabicRole: "قاری",
-    initials: "ق ن",
-    color: "oklch(0.36 0.10 142)",
-  },
-  {
-    id: 8,
-    name: "حافظ طارق محمود",
-    role: "Tarawih Imam",
-    arabicRole: "امام تراویح",
-    initials: "ح ط",
-    color: "oklch(0.44 0.12 148)",
-  },
-];
-
 // Islamic star divider
 function StarDivider() {
   return (
@@ -168,13 +92,12 @@ export default function LogScreen() {
         </div>
       </div>
 
-      {/* Members list */}
+      {/* Empty state */}
       <div
         className="flex-1 overflow-y-auto"
         style={{ background: "oklch(0.97 0.01 147)" }}
       >
         <div className="px-4 py-3">
-          {/* Section label */}
           <div className="mb-3">
             <StarDivider />
             <p
@@ -189,117 +112,41 @@ export default function LogScreen() {
             </p>
           </div>
 
-          {/* Member cards */}
-          <div className="flex flex-col gap-2.5">
-            {members.map((member, index) => (
-              <div
-                key={member.id}
-                data-ocid={`log.item.${index + 1}`}
-                className="rounded-2xl flex items-center gap-3 px-4 py-3"
+          {/* Empty state message */}
+          <div
+            data-ocid="log.empty_state"
+            className="flex flex-col items-center justify-center py-16 gap-4"
+          >
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              style={{ background: "oklch(0.93 0.05 147)" }}
+            >
+              <span style={{ fontSize: "2rem" }}>🕌</span>
+            </div>
+            <div className="text-center">
+              <p
+                className="font-semibold text-sm"
+                style={{ color: "oklch(0.40 0.13 147)" }}
+              >
+                کمیٹی اراکین
+              </p>
+              <p
+                className="text-xs mt-1"
                 style={{
-                  background: "white",
-                  border: "1px solid oklch(0.88 0.02 147)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  color: "oklch(0.55 0.05 147)",
+                  fontFamily: "'Scheherazade New', serif",
+                  direction: "rtl",
+                  fontSize: "0.9rem",
                 }}
               >
-                {/* Avatar */}
-                <div
-                  className="flex-shrink-0 flex items-center justify-center rounded-full"
-                  style={{
-                    width: "46px",
-                    height: "46px",
-                    background: member.color,
-                    boxShadow: "0 3px 10px rgba(0,0,0,0.18)",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily:
-                        "'Scheherazade New', 'Noto Nastaliq Urdu', serif",
-                      fontSize: "0.8rem",
-                      fontWeight: 700,
-                      color: "oklch(0.85 0.14 78)",
-                      direction: "rtl",
-                    }}
-                  >
-                    {member.initials}
-                  </span>
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p
-                    style={{
-                      fontFamily:
-                        "'Scheherazade New', 'Noto Nastaliq Urdu', serif",
-                      fontSize: "1rem",
-                      fontWeight: 700,
-                      color: "oklch(0.25 0.09 147)",
-                      direction: "rtl",
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {member.name}
-                  </p>
-                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                    <span
-                      style={{
-                        fontSize: "0.7rem",
-                        fontWeight: 600,
-                        color: "oklch(0.50 0.08 147)",
-                      }}
-                    >
-                      {member.role}
-                    </span>
-                    <span
-                      style={{
-                        width: "3px",
-                        height: "3px",
-                        borderRadius: "50%",
-                        background: "oklch(0.72 0.12 78)",
-                        display: "inline-block",
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontFamily:
-                          "'Scheherazade New', 'Noto Nastaliq Urdu', serif",
-                        fontSize: "0.75rem",
-                        color: "oklch(0.40 0.13 147)",
-                        fontWeight: 600,
-                        direction: "rtl",
-                      }}
-                    >
-                      {member.arabicRole}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Number badge */}
-                <div
-                  className="flex-shrink-0 flex items-center justify-center rounded-full"
-                  style={{
-                    width: "24px",
-                    height: "24px",
-                    background: "oklch(0.93 0.05 147)",
-                    border: "1px solid oklch(0.80 0.08 147)",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "0.65rem",
-                      fontWeight: 700,
-                      color: "oklch(0.40 0.13 147)",
-                    }}
-                  >
-                    {index + 1}
-                  </span>
-                </div>
-              </div>
-            ))}
+                جلد آ رہا ہے
+              </p>
+              <p className="text-xs mt-2" style={{ color: "#9ca3af" }}>
+                Committee members will be listed here soon.
+              </p>
+            </div>
           </div>
 
-          {/* Bottom divider */}
           <div className="mt-4">
             <StarDivider />
           </div>

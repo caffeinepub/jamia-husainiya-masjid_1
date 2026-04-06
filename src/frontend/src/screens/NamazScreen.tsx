@@ -1,52 +1,45 @@
 import { useMemo } from "react";
+import type { PrayerTime } from "../backend.d";
 
-interface PrayerTime {
-  name: string;
-  arabic: string;
-  time: string;
-  hour: number;
-  minute: number;
-  note?: string;
+interface NamazScreenProps {
+  prayerTimes: PrayerTime[];
+  isLoading?: boolean;
 }
 
-const prayerTimes: PrayerTime[] = [
-  { name: "Fajr", arabic: "الفجر", time: "5:41 AM", hour: 5, minute: 41 },
-  { name: "Zohar", arabic: "الظهر", time: "2:30 PM", hour: 14, minute: 30 },
-  { name: "Asr", arabic: "العصر", time: "5:15 PM", hour: 17, minute: 15 },
-  { name: "Maghrib", arabic: "المغرب", time: "6:41 PM", hour: 18, minute: 41 },
-  { name: "Isha", arabic: "العشاء", time: "8:45 PM", hour: 20, minute: 45 },
-  {
-    name: "Khutba Juma",
-    arabic: "الجمعة",
-    time: "1:30 PM",
-    hour: 13,
-    minute: 30,
-    note: "Friday",
-  },
-];
-
-function getNextPrayerIndex(): number {
+function getNextPrayerName(prayerTimes: PrayerTime[]): string {
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const regularPrayers = prayerTimes.filter((p) => p.name !== "Khutba Juma");
-  const idx = regularPrayers.findIndex(
-    (p) => p.hour * 60 + p.minute > nowMinutes,
-  );
-  if (idx === -1) return 0;
-  return prayerTimes.findIndex((p) => p.name === regularPrayers[idx].name);
+
+  const parseTime = (timeStr: string): number => {
+    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!match) return 0;
+    let hours = Number.parseInt(match[1]);
+    const minutes = Number.parseInt(match[2]);
+    const period = match[3].toUpperCase();
+    if (period === "PM" && hours !== 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
+
+  const regular = prayerTimes.filter((p) => p.name !== "Khutba Juma");
+  const next = regular.find((p) => parseTime(p.time) > nowMinutes);
+  return next ? next.name : (regular[0]?.name ?? "");
 }
 
 const prayerIcons: Record<string, string> = {
-  Fajr: "🌅",
-  Zohar: "☀️",
-  Asr: "🌤️",
-  Maghrib: "🌆",
-  Isha: "🌙",
-  "Khutba Juma": "🕌",
+  Fajr: "\uD83C\uDF05",
+  Zohar: "\u2600\uFE0F",
+  Asr: "\uD83C\uDF24\uFE0F",
+  Maghrib: "\uD83C\uDF06",
+  Isha: "\uD83C\uDF19",
+  "Khutba Juma": "\uD83D\uDD4C",
 };
 
-export default function NamazScreen() {
-  const nextIdx = useMemo(() => getNextPrayerIndex(), []);
+export default function NamazScreen({
+  prayerTimes,
+  isLoading,
+}: NamazScreenProps) {
+  const nextName = useMemo(() => getNextPrayerName(prayerTimes), [prayerTimes]);
 
   return (
     <div
@@ -89,115 +82,130 @@ export default function NamazScreen() {
         className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5"
         style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
       >
-        {prayerTimes.map((prayer, index) => {
-          const isNext = index === nextIdx && prayer.name !== "Khutba Juma";
-          return (
-            <div
-              key={prayer.name}
-              data-ocid={`namaz.item.${index + 1}`}
-              className="rounded-2xl p-4 transition-all duration-200"
-              style={{
-                background: isNext ? "oklch(0.40 0.13 147)" : "white",
-                border: `1.5px solid ${
-                  isNext ? "oklch(0.35 0.11 147)" : "#e5e7eb"
-                }`,
-                boxShadow: isNext
-                  ? "0 4px 16px rgba(15,75,47,0.25)"
-                  : "0 1px 4px rgba(0,0,0,0.05)",
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                    style={{
-                      background: isNext
-                        ? "rgba(255,255,255,0.15)"
-                        : "oklch(0.93 0.05 147)",
-                    }}
-                  >
-                    {prayerIcons[prayer.name] ?? "🕌"}
-                  </div>
-                  <div>
-                    <p
-                      className="font-bold text-sm"
+        {isLoading ? (
+          <div className="space-y-2.5">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="rounded-2xl p-4 bg-white animate-pulse"
+                style={{ border: "1.5px solid #e5e7eb", height: "72px" }}
+              />
+            ))}
+          </div>
+        ) : (
+          prayerTimes.map((prayer, index) => {
+            const isNext =
+              prayer.name === nextName && prayer.name !== "Khutba Juma";
+            return (
+              <div
+                key={prayer.name}
+                data-ocid={`namaz.item.${index + 1}`}
+                className="rounded-2xl p-4 transition-all duration-200"
+                style={{
+                  background: isNext ? "oklch(0.40 0.13 147)" : "white",
+                  border: `1.5px solid ${
+                    isNext ? "oklch(0.35 0.11 147)" : "#e5e7eb"
+                  }`,
+                  boxShadow: isNext
+                    ? "0 4px 16px rgba(15,75,47,0.25)"
+                    : "0 1px 4px rgba(0,0,0,0.05)",
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
                       style={{
-                        color: isNext ? "white" : "oklch(0.22 0.08 147)",
+                        background: isNext
+                          ? "rgba(255,255,255,0.15)"
+                          : "oklch(0.93 0.05 147)",
                       }}
                     >
-                      {prayer.name}
-                      {prayer.note && (
-                        <span
-                          className="ml-2 text-xs font-normal px-1.5 py-0.5 rounded-full"
-                          style={{
-                            background: isNext
-                              ? "rgba(255,255,255,0.2)"
-                              : "oklch(0.93 0.05 147)",
-                            color: isNext ? "white" : "oklch(0.40 0.13 147)",
-                          }}
-                        >
-                          {prayer.note}
-                        </span>
-                      )}
-                    </p>
-                    <p
-                      className="text-xs mt-0.5"
-                      style={{
-                        color: isNext
-                          ? "rgba(255,255,255,0.75)"
-                          : "oklch(0.55 0.02 240)",
-                        direction: "rtl",
-                        fontFamily: "'Scheherazade New', serif",
-                      }}
-                    >
-                      {prayer.arabic}
-                    </p>
+                      {prayerIcons[prayer.name] ?? "\uD83D\uDD4C"}
+                    </div>
+                    <div>
+                      <p
+                        className="font-bold text-sm"
+                        style={{
+                          color: isNext ? "white" : "oklch(0.22 0.08 147)",
+                        }}
+                      >
+                        {prayer.name}
+                        {prayer.name === "Khutba Juma" && (
+                          <span
+                            className="ml-2 text-xs font-normal px-1.5 py-0.5 rounded-full"
+                            style={{
+                              background: isNext
+                                ? "rgba(255,255,255,0.2)"
+                                : "oklch(0.93 0.05 147)",
+                              color: isNext ? "white" : "oklch(0.40 0.13 147)",
+                            }}
+                          >
+                            Friday
+                          </span>
+                        )}
+                      </p>
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{
+                          color: isNext
+                            ? "rgba(255,255,255,0.75)"
+                            : "oklch(0.55 0.02 240)",
+                          direction: "rtl",
+                          fontFamily: "'Scheherazade New', serif",
+                        }}
+                      >
+                        {prayer.arabic}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="text-right">
-                  <p
-                    className="font-bold"
-                    style={{
-                      fontSize: "1.2rem",
-                      color: isNext
-                        ? "oklch(0.88 0.14 78)"
-                        : "oklch(0.28 0.10 147)",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {prayer.time}
-                  </p>
-                  {isNext && (
-                    <span
-                      className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-bold"
+                  <div className="text-right">
+                    <p
+                      className="font-bold"
                       style={{
-                        background: "oklch(0.72 0.12 78)",
-                        color: "oklch(0.22 0.08 147)",
+                        fontSize: "1.2rem",
+                        color: isNext
+                          ? "oklch(0.88 0.14 78)"
+                          : "oklch(0.28 0.10 147)",
+                        lineHeight: 1,
                       }}
                     >
-                      Next
-                    </span>
-                  )}
+                      {prayer.time}
+                    </p>
+                    {isNext && (
+                      <span
+                        className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-bold"
+                        style={{
+                          background: "oklch(0.72 0.12 78)",
+                          color: "oklch(0.22 0.08 147)",
+                        }}
+                      >
+                        Next
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
 
         {/* Footer note */}
-        <div
-          className="rounded-xl p-3 text-center"
-          style={{
-            background: "white",
-            border: "1px solid #e5e7eb",
-          }}
-        >
-          <p className="text-xs" style={{ color: "#9ca3af" }}>
-            Times are fixed for Jamia Husainiya Masjid Margoobpur. Please
-            confirm with local mosque for adjustments.
-          </p>
-        </div>
+        {!isLoading && (
+          <div
+            className="rounded-xl p-3 text-center"
+            style={{
+              background: "white",
+              border: "1px solid #e5e7eb",
+            }}
+          >
+            <p className="text-xs" style={{ color: "#9ca3af" }}>
+              Times are set for Jamia Husainiya Masjid Margoobpur. Admin can
+              update times from the Admin panel.
+            </p>
+          </div>
+        )}
 
         <div className="pb-4" />
       </div>

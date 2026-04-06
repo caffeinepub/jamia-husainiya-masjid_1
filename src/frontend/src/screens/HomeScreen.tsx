@@ -38,39 +38,75 @@ export default function HomeScreen({ announcements }: HomeScreenProps) {
       className="flex flex-col"
       style={{ minHeight: "100%", background: "#f9fafb" }}
     >
-      {/* ─── GREEN HEADER ─── */}
+      {/* ─── GREEN HEADER WITH LOGO ─── */}
       <div
-        className="flex-shrink-0 px-5 pt-5 pb-4"
+        className="flex-shrink-0 px-4 pt-4 pb-3"
         style={{ background: "oklch(0.40 0.13 147)" }}
       >
-        <h1
-          className="font-bold text-white text-center"
-          style={{
-            fontSize: "1.1rem",
-            letterSpacing: "0.01em",
-            lineHeight: 1.3,
-          }}
-        >
-          Jamia Husainiya Masjid Margoobpur
-        </h1>
-        <p
-          className="text-center mt-1"
-          style={{
-            fontFamily: "'Scheherazade New', 'Noto Naskh Arabic', serif",
-            fontSize: "1.2rem",
-            color: "oklch(0.88 0.14 78)",
-            direction: "rtl",
-            lineHeight: 1.6,
-          }}
-        >
-          بسم الله الرحمن الرحيم
-        </p>
+        <div className="flex items-center gap-3">
+          {/* Mosque Logo */}
+          <div
+            className="flex-shrink-0 rounded-full overflow-hidden"
+            style={{
+              width: "52px",
+              height: "52px",
+              border: "2px solid oklch(0.72 0.12 78)",
+              background: "rgba(255,255,255,0.15)",
+            }}
+          >
+            <img
+              src="/assets/img_20260406_100452-019d6118-2be5-75ba-8475-e42f19f33474.jpg"
+              alt="Jamia Husainiya Masjid Logo"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+              }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = "none";
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML =
+                    '<span style="font-size:1.8rem;display:flex;align-items:center;justify-content:center;height:100%">🕌</span>';
+                }
+              }}
+            />
+          </div>
+
+          {/* Text block */}
+          <div className="flex-1 min-w-0">
+            <h1
+              className="font-bold text-white"
+              style={{
+                fontSize: "0.98rem",
+                letterSpacing: "0.01em",
+                lineHeight: 1.25,
+              }}
+            >
+              Jamia Husainiya Masjid Margoobpur
+            </h1>
+            <p
+              className="mt-0.5"
+              style={{
+                fontFamily: "'Scheherazade New', 'Noto Naskh Arabic', serif",
+                fontSize: "1.05rem",
+                color: "oklch(0.88 0.14 78)",
+                direction: "rtl",
+                lineHeight: 1.5,
+              }}
+            >
+              بسم الله الرحمن الرحيم
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* ─── MOSQUE IMAGE BANNER ─── */}
       <div className="flex-shrink-0 relative" style={{ height: "180px" }}>
         <img
-          src="/assets/generated/mosque-banner.dim_800x400.jpg"
+          src="/assets/img_20260406_100452-019d6118-2be5-75ba-8475-e42f19f33474.jpg"
           alt="Jamia Husainiya Masjid Margoobpur"
           className="w-full h-full"
           style={{

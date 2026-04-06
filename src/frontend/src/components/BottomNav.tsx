@@ -86,6 +86,22 @@ function MapIcon() {
   );
 }
 
+function LogIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      width="20"
+      height="20"
+      aria-hidden="true"
+      role="img"
+    >
+      <title>Log</title>
+      <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+    </svg>
+  );
+}
+
 function AdminIcon() {
   return (
     <svg
@@ -108,6 +124,7 @@ const navItems: NavItem[] = [
   { id: "notice", label: "Notice", icon: <NoticeIcon /> },
   { id: "contact", label: "Contact", icon: <ContactIcon /> },
   { id: "map", label: "Map", icon: <MapIcon /> },
+  { id: "log", label: "لوگ", icon: <LogIcon /> },
   { id: "admin", label: "Admin", icon: <AdminIcon /> },
 ];
 
@@ -143,6 +160,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               background: "transparent",
               border: "none",
               cursor: "pointer",
+              minWidth: 0,
             }}
             aria-label={item.label}
             aria-current={isActive ? "page" : undefined}
@@ -163,10 +181,14 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             </span>
             <span
               style={{
-                fontSize: "9px",
+                fontSize: "8px",
                 fontWeight: isActive ? 700 : 500,
                 color: isActive ? activeGreen : inactiveGray,
                 letterSpacing: "0.02em",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "100%",
               }}
             >
               {item.label}

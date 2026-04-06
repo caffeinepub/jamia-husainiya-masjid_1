@@ -55,6 +55,12 @@ export default function AdminPanel({
   const [editLng, setEditLng] = useState(appData.coords.lng.toString());
   const [savingMap, setSavingMap] = useState(false);
 
+  // Prayer times state
+  const [savingPrayer, setSavingPrayer] = useState<string | null>(null);
+  const [prayerEdits, setPrayerEdits] = useState<Record<string, string>>(
+    Object.fromEntries(appData.prayerTimes.map((p) => [p.name, p.time])),
+  );
+
   const handleVerifyPin = async () => {
     if (!pinInput.trim() || !actor) return;
     setVerifying(true);
@@ -66,6 +72,9 @@ export default function AdminPanel({
         setEditPhone(appData.phone);
         setEditLat(appData.coords.lat.toString());
         setEditLng(appData.coords.lng.toString());
+        setPrayerEdits(
+          Object.fromEntries(appData.prayerTimes.map((p) => [p.name, p.time])),
+        );
       } else {
         setPinError(true);
         setPinInput("");
@@ -206,6 +215,29 @@ export default function AdminPanel({
     }
   };
 
+  const handleSavePrayerTime = async (name: string) => {
+    if (!pin || !actor) return;
+    const time = prayerEdits[name];
+    if (!time?.trim()) {
+      toast.error("Time cannot be empty");
+      return;
+    }
+    setSavingPrayer(name);
+    try {
+      const ok = await actor.updatePrayerTime(pin, name, time.trim());
+      if (ok) {
+        onSaved();
+        toast.success(`${name} time updated`);
+      } else {
+        toast.error("Failed to update prayer time");
+      }
+    } catch {
+      toast.error("Error updating prayer time");
+    } finally {
+      setSavingPrayer(null);
+    }
+  };
+
   return (
     <AnimatePresence>
       {open && (
@@ -257,16 +289,27 @@ export default function AdminPanel({
               {!pin ? (
                 /* PIN Entry */
                 <div className="p-6 flex flex-col gap-4">
-                  <p
-                    className="text-center text-sm"
-                    style={{ color: "oklch(0.45 0.02 240)" }}
-                  >
-                    Enter your admin PIN to continue
-                  </p>
+                  <div className="text-center">
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                      style={{ background: "oklch(0.93 0.05 147)" }}
+                    >
+                      <span style={{ fontSize: "1.8rem" }}>🔐</span>
+                    </div>
+                    <p
+                      className="font-semibold text-sm"
+                      style={{ color: "oklch(0.28 0.10 147)" }}
+                    >
+                      Admin Access
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: "#9ca3af" }}>
+                      Enter your 3-digit PIN to continue
+                    </p>
+                  </div>
                   <Input
                     data-ocid="admin.pin.input"
                     type="password"
-                    placeholder="Enter PIN"
+                    placeholder="3-digit PIN (e.g. 786)"
                     value={pinInput}
                     onChange={(e) => setPinInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleVerifyPin()}
@@ -276,16 +319,30 @@ export default function AdminPanel({
                         ? "oklch(0.577 0.245 27.325)"
                         : "oklch(0.88 0.02 147)",
                     }}
-                    maxLength={10}
+                    maxLength={3}
                   />
                   {pinError && (
-                    <p
+                    <div
                       data-ocid="admin.pin.error_state"
-                      className="text-center text-sm"
-                      style={{ color: "oklch(0.577 0.245 27.325)" }}
+                      className="rounded-xl p-3 text-center"
+                      style={{
+                        background: "oklch(0.97 0.02 27)",
+                        border: "1px solid oklch(0.90 0.06 27)",
+                      }}
                     >
-                      Incorrect PIN. Please try again.
-                    </p>
+                      <p
+                        className="text-sm font-semibold"
+                        style={{ color: "oklch(0.50 0.20 27.325)" }}
+                      >
+                        ❌ Galat PIN hai
+                      </p>
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{ color: "oklch(0.60 0.15 27.325)" }}
+                      >
+                        Wrong PIN. Please try again.
+                      </p>
+                    </div>
                   )}
                   <Button
                     data-ocid="admin.pin.submit_button"
@@ -307,7 +364,7 @@ export default function AdminPanel({
                 /* Admin Tabs */
                 <Tabs defaultValue="announcements" className="flex flex-col">
                   <TabsList
-                    className="mx-4 mt-3 grid grid-cols-3 flex-shrink-0"
+                    className="mx-4 mt-3 grid grid-cols-4 flex-shrink-0"
                     style={{ background: "oklch(0.93 0.01 147)" }}
                   >
                     <TabsTrigger
@@ -316,6 +373,13 @@ export default function AdminPanel({
                       className="text-xs"
                     >
                       Notices
+                    </TabsTrigger>
+                    <TabsTrigger
+                      data-ocid="admin.prayer.tab"
+                      value="prayer"
+                      className="text-xs"
+                    >
+                      Namaz
                     </TabsTrigger>
                     <TabsTrigger
                       data-ocid="admin.contact.tab"
@@ -521,6 +585,63 @@ export default function AdminPanel({
                     )}
                   </TabsContent>
 
+                  {/* Prayer Times Tab */}
+                  <TabsContent
+                    value="prayer"
+                    className="px-4 pb-4 space-y-3 mt-3"
+                  >
+                    <p
+                      className="text-xs font-semibold"
+                      style={{ color: "oklch(0.40 0.13 147)" }}
+                    >
+                      Update Namaz Times (e.g. 5:41 AM)
+                    </p>
+                    {appData.prayerTimes.map((prayer, index) => (
+                      <div
+                        key={prayer.name}
+                        data-ocid={`admin.prayer.item.${index + 1}`}
+                        className="flex items-center gap-2"
+                      >
+                        <Label
+                          className="text-sm font-semibold w-28 flex-shrink-0"
+                          style={{ color: "oklch(0.30 0.10 147)" }}
+                        >
+                          {prayer.name}
+                        </Label>
+                        <Input
+                          data-ocid={`admin.prayer.time.input.${index + 1}`}
+                          value={prayerEdits[prayer.name] ?? prayer.time}
+                          onChange={(e) =>
+                            setPrayerEdits((prev) => ({
+                              ...prev,
+                              [prayer.name]: e.target.value,
+                            }))
+                          }
+                          placeholder="e.g. 5:41 AM"
+                          className="text-sm flex-1"
+                        />
+                        <Button
+                          data-ocid={`admin.prayer.save_button.${index + 1}`}
+                          size="sm"
+                          onClick={() => handleSavePrayerTime(prayer.name)}
+                          disabled={savingPrayer === prayer.name}
+                          style={{
+                            background: "oklch(0.40 0.13 147)",
+                            color: "white",
+                            minWidth: "52px",
+                          }}
+                          className="text-xs"
+                        >
+                          {savingPrayer === prayer.name ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Save className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </TabsContent>
+
                   {/* Contact Tab */}
                   <TabsContent
                     value="contact"
@@ -534,7 +655,7 @@ export default function AdminPanel({
                         data-ocid="admin.contact.phone.input"
                         value={editPhone}
                         onChange={(e) => setEditPhone(e.target.value)}
-                        placeholder="+92-XXX-XXXXXXX"
+                        placeholder="+91 89589 99299"
                         type="tel"
                       />
                       <Button
@@ -563,18 +684,18 @@ export default function AdminPanel({
                         data-ocid="admin.map.lat.input"
                         value={editLat}
                         onChange={(e) => setEditLat(e.target.value)}
-                        placeholder="31.5"
+                        placeholder="29.863646"
                         type="number"
-                        step="0.0001"
+                        step="0.000001"
                       />
                       <Label className="text-sm font-semibold">Longitude</Label>
                       <Input
                         data-ocid="admin.map.lng.input"
                         value={editLng}
                         onChange={(e) => setEditLng(e.target.value)}
-                        placeholder="74.3"
+                        placeholder="77.971577"
                         type="number"
-                        step="0.0001"
+                        step="0.000001"
                       />
                       <Button
                         data-ocid="admin.map.save_button"

@@ -134,12 +134,12 @@ export default function MapScreen({
             🕌 Jamia Husainiya Masjid
           </p>
           <p className="text-sm" style={{ color: "#374151" }}>
-            Masjid Road, Margoobpur,
+            Margoobpur, Haridwar,
             <br />
-            Punjab, Pakistan
+            Uttarakhand, India
           </p>
           <p className="text-xs mt-2 font-mono" style={{ color: "#9ca3af" }}>
-            {coords.lat.toFixed(4)}° N, {coords.lng.toFixed(4)}° E
+            {coords.lat.toFixed(6)}° N, {coords.lng.toFixed(6)}° E
           </p>
         </div>
 

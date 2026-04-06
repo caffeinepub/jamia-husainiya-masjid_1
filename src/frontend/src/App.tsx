@@ -2,12 +2,18 @@ import { Toaster } from "@/components/ui/sonner";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { Announcement, MapCoords, backendInterface } from "./backend.d";
+import type {
+  Announcement,
+  MapCoords,
+  PrayerTime,
+  backendInterface,
+} from "./backend.d";
 import AdminPanel from "./components/AdminPanel";
 import BottomNav from "./components/BottomNav";
 import { useActor } from "./hooks/useActor";
 import ContactScreen from "./screens/ContactScreen";
 import HomeScreen from "./screens/HomeScreen";
+import LogScreen from "./screens/LogScreen";
 import MapScreen from "./screens/MapScreen";
 import NamazScreen from "./screens/NamazScreen";
 import NoticeScreen from "./screens/NoticeScreen";
@@ -25,20 +31,42 @@ export interface AppData {
   announcements: Announcement[];
   phone: string;
   coords: MapCoords;
+  prayerTimes: PrayerTime[];
   isLoading: boolean;
 }
+
+const DEFAULT_PRAYER_TIMES: PrayerTime[] = [
+  { name: "Fajr", arabic: "\u0627\u0644\u0641\u062c\u0631", time: "5:41 AM" },
+  { name: "Zohar", arabic: "\u0627\u0644\u0638\u0647\u0631", time: "1:30 PM" },
+  { name: "Asr", arabic: "\u0627\u0644\u0639\u0635\u0631", time: "5:15 PM" },
+  {
+    name: "Maghrib",
+    arabic: "\u0627\u0644\u0645\u063a\u0631\u0628",
+    time: "6:41 PM",
+  },
+  {
+    name: "Isha",
+    arabic: "\u0627\u0644\u0639\u0634\u0627\u0621",
+    time: "8:45 PM",
+  },
+  {
+    name: "Khutba Juma",
+    arabic: "\u0627\u0644\u062c\u0645\u0639\u0629",
+    time: "1:30 PM",
+  },
+];
 
 export default function App() {
   const { actor: rawActor, isFetching: actorFetching } = useActor();
   const actor = rawActor as unknown as backendInterface | null;
-  const [activeTab, setActiveTab] =
-    useState<Exclude<TabId, "admin" | "log">>("home");
+  const [activeTab, setActiveTab] = useState<Exclude<TabId, "admin">>("home");
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminPin, setAdminPin] = useState<string | null>(null);
   const [appData, setAppData] = useState<AppData>({
     announcements: [],
-    phone: "+92-300-0000000",
-    coords: { lat: 31.5, lng: 74.3 },
+    phone: "+91 89589 99299",
+    coords: { lat: 29.863646, lng: 77.971577 },
+    prayerTimes: DEFAULT_PRAYER_TIMES,
     isLoading: true,
   });
 
@@ -46,12 +74,19 @@ export default function App() {
     if (!actor) return;
     setAppData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const [announcements, phone, coords] = await Promise.all([
+      const [announcements, phone, coords, prayerTimes] = await Promise.all([
         actor.getAnnouncements(),
         actor.getContactPhone(),
         actor.getMapCoords(),
+        actor.getPrayerTimes(),
       ]);
-      setAppData({ announcements, phone, coords, isLoading: false });
+      setAppData({
+        announcements,
+        phone,
+        coords,
+        prayerTimes,
+        isLoading: false,
+      });
     } catch (err) {
       console.error("Failed to load data", err);
       setAppData((prev) => ({ ...prev, isLoading: false }));
@@ -67,8 +102,8 @@ export default function App() {
   const switchTab = (tab: TabId) => {
     if (tab === "admin") {
       openAdmin();
-    } else if (tab !== "log") {
-      setActiveTab(tab as Exclude<TabId, "admin" | "log">);
+    } else {
+      setActiveTab(tab as Exclude<TabId, "admin">);
     }
   };
 
@@ -86,11 +121,16 @@ export default function App() {
     exit: { opacity: 0, x: -20 },
   };
 
-  const screens: Record<Exclude<TabId, "admin" | "log">, React.ReactNode> = {
+  const screens: Record<Exclude<TabId, "admin">, React.ReactNode> = {
     home: (
       <HomeScreen announcements={appData.announcements} phone={appData.phone} />
     ),
-    namaz: <NamazScreen />,
+    namaz: (
+      <NamazScreen
+        prayerTimes={appData.prayerTimes}
+        isLoading={appData.isLoading}
+      />
+    ),
     notice: (
       <NoticeScreen
         announcements={appData.announcements}
@@ -106,6 +146,7 @@ export default function App() {
         onOpenAdmin={openAdmin}
       />
     ),
+    log: <LogScreen />,
   };
 
   return (
@@ -132,7 +173,7 @@ export default function App() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom Navigation — fixed at bottom, full width */}
+      {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={switchTab} />
 
       {/* Admin Panel Modal */}

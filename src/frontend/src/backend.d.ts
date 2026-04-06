@@ -12,6 +12,12 @@ export interface MapCoords {
   lng: number;
 }
 
+export interface PrayerTime {
+  name: string;
+  arabic: string;
+  time: string;
+}
+
 export interface backendInterface {
   verifyPin(pin: string): Promise<boolean>;
   changePin(oldPin: string, newPin: string): Promise<boolean>;
@@ -23,4 +29,6 @@ export interface backendInterface {
   setContactPhone(pin: string, phone: string): Promise<boolean>;
   getMapCoords(): Promise<MapCoords>;
   setMapCoords(pin: string, lat: number, lng: number): Promise<boolean>;
+  getPrayerTimes(): Promise<PrayerTime[]>;
+  updatePrayerTime(pin: string, name: string, time: string): Promise<boolean>;
 }

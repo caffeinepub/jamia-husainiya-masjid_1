@@ -19,17 +19,28 @@ actor {
     lng : Float;
   };
 
+  public type PrayerTime = {
+    name : Text;
+    arabic : Text;
+    time : Text;
+  };
+
   // --- Stable state ---
-  stable var announcements : [Announcement] = [
-    { id = 1; title = "Friday Jumma Prayer"; body = "Khutba begins at 1:30 PM every Friday. Please arrive early."; date = "Every Friday" },
-    { id = 2; title = "Ramadan Taraweeh"; body = "Taraweeh prayers will begin after Isha throughout the month of Ramadan."; date = "During Ramadan" },
-    { id = 3; title = "Monthly Mehfil-e-Milad"; body = "Monthly Milad un Nabi gathering on the last Sunday of each month."; date = "Last Sunday Monthly" }
-  ];
-  stable var nextId : Nat = 4;
-  stable var contactPhone : Text = "+92-300-0000000";
-  stable var mapLat : Float = 31.5;
-  stable var mapLng : Float = 74.3;
+  stable var announcements : [Announcement] = [];
+  stable var nextId : Nat = 1;
+  stable var contactPhone : Text = "+918958999299";
+  stable var mapLat : Float = 29.863646;
+  stable var mapLng : Float = 77.971577;
   stable var adminPin : Text = "786";
+
+  stable var prayerTimes : [PrayerTime] = [
+    { name = "Fajr"; arabic = "\u{0627}\u{0644}\u{0641}\u{062C}\u{0631}"; time = "5:41 AM" },
+    { name = "Zohar"; arabic = "\u{0627}\u{0644}\u{0638}\u{0647}\u{0631}"; time = "1:30 PM" },
+    { name = "Asr"; arabic = "\u{0627}\u{0644}\u{0639}\u{0635}\u{0631}"; time = "5:15 PM" },
+    { name = "Maghrib"; arabic = "\u{0627}\u{0644}\u{0645}\u{063A}\u{0631}\u{0628}"; time = "6:41 PM" },
+    { name = "Isha"; arabic = "\u{0627}\u{0644}\u{0639}\u{0634}\u{0627}\u{0621}"; time = "8:45 PM" },
+    { name = "Khutba Juma"; arabic = "\u{0627}\u{0644}\u{062C}\u{0645}\u{0639}\u{0629}"; time = "1:30 PM" }
+  ];
 
   // --- PIN verification ---
   public query func verifyPin(pin : Text) : async Bool {
@@ -92,6 +103,19 @@ actor {
     if (pin != adminPin) return false;
     mapLat := lat;
     mapLng := lng;
+    true
+  };
+
+  // --- Prayer Times ---
+  public query func getPrayerTimes() : async [PrayerTime] {
+    prayerTimes
+  };
+
+  public func updatePrayerTime(pin : Text, name : Text, time : Text) : async Bool {
+    if (pin != adminPin) return false;
+    prayerTimes := Array.map<PrayerTime, PrayerTime>(prayerTimes, func(p) {
+      if (p.name == name) { { name = p.name; arabic = p.arabic; time } } else { p }
+    });
     true
   };
 
