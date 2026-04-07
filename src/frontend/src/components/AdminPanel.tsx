@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { AppData } from "../App";
 import type { Announcement, backendInterface } from "../backend.d";
@@ -62,6 +62,24 @@ export default function AdminPanel({
   const [prayerEdits, setPrayerEdits] = useState<Record<string, string>>(
     Object.fromEntries(appData.prayerTimes.map((p) => [p.name, p.time])),
   );
+
+  // Keep prayerEdits in sync with appData.prayerTimes whenever backend data refreshes
+  useEffect(() => {
+    if (appData.prayerTimes.length > 0 && !appData.isLoading) {
+      setPrayerEdits(
+        Object.fromEntries(appData.prayerTimes.map((p) => [p.name, p.time])),
+      );
+    }
+  }, [appData.prayerTimes, appData.isLoading]);
+
+  // Sync contact and map fields when appData refreshes
+  useEffect(() => {
+    if (!appData.isLoading) {
+      setEditPhone(appData.phone);
+      setEditLat(appData.coords.lat.toString());
+      setEditLng(appData.coords.lng.toString());
+    }
+  }, [appData.phone, appData.coords, appData.isLoading]);
 
   const handleVerifyPin = async () => {
     const trimmed = pinInput.trim();
@@ -242,7 +260,7 @@ export default function AdminPanel({
       const ok = await actor.updatePrayerTime(pin, name, time.trim());
       if (ok) {
         onSaved();
-        toast.success(`${name} time updated`);
+        toast.success(`${name} ka waqt update ho gaya`);
       } else {
         toast.error("Failed to update prayer time");
       }
@@ -610,7 +628,13 @@ export default function AdminPanel({
                       className="text-xs font-semibold"
                       style={{ color: "oklch(0.40 0.13 147)" }}
                     >
-                      Update Namaz Times (e.g. 5:41 AM)
+                      نماز کا وقت بدلیں (مثال: 5:41 AM)
+                    </p>
+                    <p
+                      className="text-xs"
+                      style={{ color: "oklch(0.55 0.05 147)" }}
+                    >
+                      ہر نماز کا وقت لکھ کر Save بٹن دبائیں
                     </p>
                     {appData.prayerTimes.map((prayer, index) => (
                       <div
