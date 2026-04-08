@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/sonner";
-import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   Announcement,
@@ -105,6 +104,8 @@ export default function App() {
   const actor = rawActor as unknown as backendInterface | null;
   const [activeTab, setActiveTab] = useState<Exclude<TabId, "admin">>("home");
   const [adminOpen, setAdminOpen] = useState(false);
+  // Do NOT restore admin session from localStorage — always require PIN on fresh load.
+  // This avoids state mismatches where adminPin is set but adminOpen is false.
   const [adminPin, setAdminPin] = useState<string | null>(null);
   const [appData, setAppData] = useState<AppData>({
     announcements: [],
@@ -155,17 +156,18 @@ export default function App() {
     }
   }, [actor, actorFetching, fetchData]);
 
-  // Poll every 5 seconds — shorter interval helps the user panel pick up
-  // changes shortly after the admin saves, even if the first post-save fetch
-  // returns a cached response from the agent.
+  // Poll every 30 seconds — but pause entirely when the admin panel is open
+  // so that continuous appData updates don't cause AdminPanel re-renders that
+  // feel like page refreshes to the user.
   useEffect(() => {
+    if (adminOpen) return; // pause polling while admin panel is open
     const interval = setInterval(() => {
       if (actorRef.current) {
         fetchData();
       }
-    }, 5000);
+    }, 30000);
     return () => clearInterval(interval);
-  }, [fetchData]);
+  }, [fetchData, adminOpen]);
 
   // Re-fetch fresh data whenever user switches to home or namaz tab
   useEffect(() => {
@@ -173,6 +175,18 @@ export default function App() {
       fetchData();
     }
   }, [activeTab, fetchData]);
+
+  // Persist login to localStorage so page reload doesn't re-show PIN screen
+  const handlePinSet = (pin: string) => {
+    setAdminPin(pin);
+  };
+
+  const openAdmin = () => setAdminOpen(true);
+
+  const closeAdmin = () => {
+    setAdminPin(null);
+    setAdminOpen(false);
+  };
 
   const switchTab = (tab: TabId) => {
     if (tab === "admin") {
@@ -182,9 +196,6 @@ export default function App() {
     }
   };
 
-  const openAdmin = () => setAdminOpen(true);
-  const closeAdmin = () => setAdminOpen(false);
-
   const handleAdminSaved = () => {
     // After admin saves, wait 500 ms for the backend update call to commit,
     // then fetch fresh prayer times. A second fetch at 2 s ensures we get
@@ -192,12 +203,6 @@ export default function App() {
     // the first call.
     setTimeout(() => fetchData(), 500);
     setTimeout(() => fetchData(), 2000);
-  };
-
-  const screenVariants = {
-    enter: { opacity: 0, x: 20 },
-    center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
   };
 
   const screens: Record<Exclude<TabId, "admin">, React.ReactNode> = {
@@ -240,20 +245,13 @@ export default function App() {
     >
       {/* Scrollable screen content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            variants={screenVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.22, ease: "easeInOut" }}
-            className="flex-1 flex flex-col overflow-hidden h-full"
-            style={{ minHeight: 0 }}
-          >
-            {screens[activeTab]}
-          </motion.div>
-        </AnimatePresence>
+        <div
+          key={activeTab}
+          className="flex-1 flex flex-col overflow-hidden h-full"
+          style={{ minHeight: 0 }}
+        >
+          {screens[activeTab]}
+        </div>
       </div>
 
       {/* Bottom Navigation */}
@@ -265,7 +263,7 @@ export default function App() {
         onClose={closeAdmin}
         actor={actor}
         pin={adminPin}
-        onPinSet={setAdminPin}
+        onPinSet={handlePinSet}
         appData={appData}
         onSaved={handleAdminSaved}
       />

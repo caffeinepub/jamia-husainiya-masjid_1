@@ -54,6 +54,12 @@ export default defineConfig({
         find: "@",
         replacement: fileURLToPath(new URL("./src", import.meta.url)),
       },
+      {
+        // Stub out the 'motion' package — it is installed but unused.
+        // motion v12+ has React 19 incompatibilities that cause a white screen.
+        find: /^motion(\/.*)?$/,
+        replacement: fileURLToPath(new URL("./src/motion-stub.ts", import.meta.url)),
+      },
     ],
     dedupe: ["@dfinity/agent"]
   },

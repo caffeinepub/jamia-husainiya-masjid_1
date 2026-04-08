@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Pencil, Plus, Save, Trash2, X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { AppData } from "../App";
@@ -68,22 +67,42 @@ export default function AdminPanel({
     null,
   );
 
-  // Keep prayerEdits in sync with appData.prayerTimes whenever backend data refreshes
+  // Keep prayerEdits in sync with appData.prayerTimes whenever backend data refreshes.
+  // Use a ref to track the last synced prayer times string to avoid firing on every render.
+  const lastSyncedPrayerTimesRef = useRef<string>("");
   useEffect(() => {
     if (appData.prayerTimes.length > 0 && !appData.isLoading) {
-      setPrayerEdits(
-        Object.fromEntries(appData.prayerTimes.map((p) => [p.name, p.time])),
-      );
-      lastSavedPrayerRef.current = null;
+      const serialized = appData.prayerTimes
+        .map((p) => `${p.name}:${p.time}`)
+        .join("|");
+      if (serialized !== lastSyncedPrayerTimesRef.current) {
+        lastSyncedPrayerTimesRef.current = serialized;
+        setPrayerEdits(
+          Object.fromEntries(appData.prayerTimes.map((p) => [p.name, p.time])),
+        );
+        lastSavedPrayerRef.current = null;
+      }
     }
   }, [appData.prayerTimes, appData.isLoading]);
 
-  // Sync contact and map fields when appData refreshes
+  // Sync contact and map fields when appData refreshes.
+  // Use refs to track last synced values to avoid firing on every render.
+  const lastSyncedPhoneRef = useRef<string>("");
+  const lastSyncedCoordsRef = useRef<string>("");
   useEffect(() => {
     if (!appData.isLoading) {
-      setEditPhone(appData.phone);
-      setEditLat(appData.coords.lat.toString());
-      setEditLng(appData.coords.lng.toString());
+      const phoneChanged = appData.phone !== lastSyncedPhoneRef.current;
+      const coordsStr = `${appData.coords.lat},${appData.coords.lng}`;
+      const coordsChanged = coordsStr !== lastSyncedCoordsRef.current;
+      if (phoneChanged) {
+        lastSyncedPhoneRef.current = appData.phone;
+        setEditPhone(appData.phone);
+      }
+      if (coordsChanged) {
+        lastSyncedCoordsRef.current = coordsStr;
+        setEditLat(appData.coords.lat.toString());
+        setEditLng(appData.coords.lng.toString());
+      }
     }
   }, [appData.phone, appData.coords, appData.isLoading]);
 
@@ -318,22 +337,17 @@ export default function AdminPanel({
   };
 
   return (
-    <AnimatePresence>
+    <>
       {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <div
           className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
           style={{ background: "rgba(0,0,0,0.6)" }}
           onClick={(e) => e.target === e.currentTarget && handleClose()}
+          onKeyDown={(e) => e.key === "Escape" && handleClose()}
+          role="presentation"
         >
-          <motion.div
+          <div
             data-ocid="admin.dialog"
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 60, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="relative flex flex-col overflow-hidden"
             style={{
               width: "100%",
@@ -343,6 +357,7 @@ export default function AdminPanel({
               borderRadius: "1.5rem 1.5rem 0 0",
             }}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div
@@ -874,9 +889,9 @@ export default function AdminPanel({
                 </Tabs>
               )}
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
