@@ -12,6 +12,8 @@ process.env.II_URL = process.env.II_URL || ii_url;
 process.env.STORAGE_GATEWAY_URL =
   process.env.STORAGE_GATEWAY_URL || "https://blob.caffeine.ai";
 
+const motionStub = fileURLToPath(new URL("./src/motion-stub.ts", import.meta.url));
+
 export default defineConfig({
   logLevel: "error",
   build: {
@@ -54,12 +56,16 @@ export default defineConfig({
         find: "@",
         replacement: fileURLToPath(new URL("./src", import.meta.url)),
       },
-      {
-        // Stub out the 'motion' package — it is installed but unused.
-        // motion v12+ has React 19 incompatibilities that cause a white screen.
-        find: /^motion(\/.*)?$/,
-        replacement: fileURLToPath(new URL("./src/motion-stub.ts", import.meta.url)),
-      },
+      // Stub out every possible motion import path.
+      // motion v12+ has React 19 incompatibilities that cause a white screen.
+      // These aliases redirect ALL motion imports to our no-op stub BEFORE
+      // Vite or esbuild can load the real package.
+      { find: "motion/react", replacement: motionStub },
+      { find: "motion/react-client", replacement: motionStub },
+      { find: "motion/react-server", replacement: motionStub },
+      { find: "motion/dom", replacement: motionStub },
+      { find: "motion/mini", replacement: motionStub },
+      { find: "motion", replacement: motionStub },
     ],
     dedupe: ["@dfinity/agent"]
   },

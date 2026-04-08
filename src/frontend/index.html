@@ -3,13 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>App</title>
-    <meta name="description" content="Built with caffeine.ai" />
-    <meta property="og:title" content="App" />
-    <meta property="og:description" content="Built with caffeine.ai" />
+    <title>Jamia Husainiya Masjid</title>
+    <meta name="description" content="Jamia Husainiya Masjid Margoobpur" />
+    <meta property="og:title" content="Jamia Husainiya Masjid" />
+    <meta property="og:description" content="Jamia Husainiya Masjid Margoobpur" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <!--
+      Last-resort error display.
+      If the JS bundle crashes before React mounts, this script surfaces the
+      error as a visible page instead of a blank white screen.
+    -->
+    <script>
+      window.onerror = function (message, source, lineno, colno, error) {
+        // Don't show for benign network errors or cancelled requests
+        if (typeof message === "string" && message.indexOf("Script error") !== -1) return false;
+        var root = document.getElementById("root");
+        if (!root) return false;
+        // Only show fallback if React hasn't mounted yet (root is still empty)
+        if (root.children.length > 0) return false;
+        root.innerHTML =
+          '<div style="display:flex;flex-direction:column;align-items:center;' +
+          'justify-content:center;min-height:100vh;padding:24px;' +
+          'font-family:sans-serif;background:#f0fdf4;color:#14532d;text-align:center;">' +
+          '<div style="font-size:48px;margin-bottom:16px">🕌</div>' +
+          '<h2 style="font-size:20px;font-weight:bold;margin-bottom:8px">' +
+          'Something went wrong. Please reload.</h2>' +
+          '<p style="font-size:14px;color:#166534;margin-bottom:24px">' +
+          'कुछ गलत हो गया। कृपया पेज को रीलोड करें।</p>' +
+          '<button onclick="window.location.reload()" ' +
+          'style="background:#16a34a;color:white;border:none;border-radius:8px;' +
+          'padding:12px 24px;font-size:16px;cursor:pointer;">' +
+          'Reload / रीलोड</button></div>';
+        return false;
+      };
+
+      window.onunhandledrejection = function (event) {
+        window.onerror(
+          event.reason ? (event.reason.message || String(event.reason)) : "Unhandled promise rejection",
+          "", 0, 0,
+          event.reason instanceof Error ? event.reason : null
+        );
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>
