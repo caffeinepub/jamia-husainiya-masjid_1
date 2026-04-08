@@ -77,18 +77,22 @@ export default function NamazScreen({
         </p>
       </div>
 
-      {/* Prayer cards */}
+      {/* Prayer list — flat rows instead of individual cards */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5"
+        className="flex-1 overflow-y-auto"
         style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
       >
         {isLoading ? (
-          <div className="space-y-2.5">
+          <div>
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="rounded-2xl p-4 bg-white animate-pulse"
-                style={{ border: "1.5px solid #e5e7eb", height: "72px" }}
+                className="px-5 py-4 animate-pulse"
+                style={{
+                  borderBottom: "1px solid #e5e7eb",
+                  height: "72px",
+                  background: i % 2 === 0 ? "#f3f4f6" : "#f9fafb",
+                }}
               />
             ))}
           </div>
@@ -100,21 +104,20 @@ export default function NamazScreen({
               <div
                 key={prayer.name}
                 data-ocid={`namaz.item.${index + 1}`}
-                className="rounded-2xl p-4 transition-all duration-200"
+                className="transition-all duration-200"
                 style={{
-                  background: isNext ? "oklch(0.40 0.13 147)" : "white",
-                  border: `1.5px solid ${
-                    isNext ? "oklch(0.35 0.11 147)" : "#e5e7eb"
-                  }`,
-                  boxShadow: isNext
-                    ? "0 4px 16px rgba(15,75,47,0.25)"
-                    : "0 1px 4px rgba(0,0,0,0.05)",
+                  background: isNext
+                    ? "oklch(0.40 0.13 147)"
+                    : index % 2 === 0
+                      ? "#f9fafb"
+                      : "#f3f4f6",
+                  borderBottom: isNext ? "none" : "1px solid #e5e7eb",
                 }}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between px-5 py-4">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                       style={{
                         background: isNext
                           ? "rgba(255,255,255,0.15)"
@@ -191,15 +194,9 @@ export default function NamazScreen({
           })
         )}
 
-        {/* Footer note */}
+        {/* Footer note — flat, no box */}
         {!isLoading && (
-          <div
-            className="rounded-xl p-3 text-center"
-            style={{
-              background: "white",
-              border: "1px solid #e5e7eb",
-            }}
-          >
+          <div className="px-5 py-4 text-center">
             <p className="text-xs" style={{ color: "#9ca3af" }}>
               Times are set for Jamia Husainiya Masjid Margoobpur. Admin can
               update times from the Admin panel.

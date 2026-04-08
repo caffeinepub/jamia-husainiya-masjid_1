@@ -1,23 +1,27 @@
 import { useMemo } from "react";
-import type { Announcement } from "../backend.d";
+import type { Announcement, PrayerTime } from "../backend.d";
 
-interface PrayerTime {
-  name: string;
-  arabic: string;
-  time: string;
+interface PrayerTimeWithHour extends PrayerTime {
   hour: number;
   minute: number;
 }
 
-const prayerTimes: PrayerTime[] = [
-  { name: "Fajr", arabic: "الفجر", time: "5:41 AM", hour: 5, minute: 41 },
-  { name: "Zohar", arabic: "الظهر", time: "2:30 PM", hour: 14, minute: 30 },
-  { name: "Asr", arabic: "العصر", time: "5:15 PM", hour: 17, minute: 15 },
-  { name: "Maghrib", arabic: "المغرب", time: "6:41 PM", hour: 18, minute: 41 },
-  { name: "Isha", arabic: "العشاء", time: "8:30 PM", hour: 20, minute: 30 },
-];
+function parseTime(timeStr: string): { hour: number; minute: number } {
+  // Parses "5:41 AM", "8:30 PM", "1:30 PM" etc.
+  const match = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+  if (!match) return { hour: 0, minute: 0 };
+  let hour = Number.parseInt(match[1], 10);
+  const minute = Number.parseInt(match[2], 10);
+  const period = match[3].toUpperCase();
+  if (period === "PM" && hour !== 12) hour += 12;
+  if (period === "AM" && hour === 12) hour = 0;
+  return { hour, minute };
+}
 
-function getNextPrayer(): PrayerTime {
+function getNextPrayer(
+  prayerTimes: PrayerTimeWithHour[],
+): PrayerTimeWithHour | null {
+  if (!prayerTimes.length) return null;
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const next = prayerTimes.find((p) => p.hour * 60 + p.minute > nowMinutes);
@@ -27,10 +31,26 @@ function getNextPrayer(): PrayerTime {
 interface HomeScreenProps {
   announcements: Announcement[];
   phone: string;
+  prayerTimes: PrayerTime[];
 }
 
-export default function HomeScreen({ announcements }: HomeScreenProps) {
-  const nextPrayer = useMemo(() => getNextPrayer(), []);
+export default function HomeScreen({
+  announcements,
+  prayerTimes,
+}: HomeScreenProps) {
+  const enrichedTimes: PrayerTimeWithHour[] = useMemo(
+    () =>
+      prayerTimes.map((p) => {
+        const { hour, minute } = parseTime(p.time);
+        return { ...p, hour, minute };
+      }),
+    [prayerTimes],
+  );
+
+  const nextPrayer = useMemo(
+    () => getNextPrayer(enrichedTimes),
+    [enrichedTimes],
+  );
 
   return (
     <div
@@ -123,193 +143,199 @@ export default function HomeScreen({ announcements }: HomeScreenProps) {
         className="flex-1 overflow-y-auto"
         style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
       >
-        {/* Welcome Card */}
-        <div className="mx-4 mt-4">
-          <div
-            className="rounded-2xl p-4"
+        {/* Welcome Section — flat, no box */}
+        <div className="px-4 pt-5 pb-3">
+          <p
+            className="font-bold"
+            style={{ fontSize: "1.1rem", color: "oklch(0.28 0.10 147)" }}
+          >
+            Assalamu Alaikum
+          </p>
+          <p
             style={{
-              background: "white",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              fontFamily: "'Scheherazade New', 'Noto Naskh Arabic', serif",
+              fontSize: "1.1rem",
+              color: "oklch(0.72 0.12 78)",
+              direction: "rtl",
+              marginTop: "2px",
+              marginBottom: "8px",
             }}
           >
-            <p
-              className="font-bold"
-              style={{ fontSize: "1.1rem", color: "oklch(0.28 0.10 147)" }}
-            >
-              Assalamu Alaikum
-            </p>
-            <p
-              style={{
-                fontFamily: "'Scheherazade New', 'Noto Naskh Arabic', serif",
-                fontSize: "1.1rem",
-                color: "oklch(0.72 0.12 78)",
-                direction: "rtl",
-                marginTop: "2px",
-                marginBottom: "8px",
-              }}
-            >
-              وَعَلَيْكُمُ السَّلام
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: "#6b7280" }}>
-              Welcome to Jamia Husainiya Masjid Margoobpur. May Allah bless you
-              and your family. Join us for daily prayers, Friday Khutba, and
-              community events.
-            </p>
-          </div>
+            وَعَلَيْكُمُ السَّلام
+          </p>
+          <p className="text-sm leading-relaxed" style={{ color: "#6b7280" }}>
+            Welcome to Jamia Husainiya Masjid Margoobpur. May Allah bless you
+            and your family. Join us for daily prayers, Friday Khutba, and
+            community events.
+          </p>
         </div>
 
-        {/* Next Prayer Card */}
-        <div className="mx-4 mt-3">
-          <div
-            className="rounded-2xl p-4"
-            style={{
-              background: "oklch(0.40 0.13 147)",
-              boxShadow: "0 4px 16px rgba(15,75,47,0.25)",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "0.65rem",
-                fontWeight: 700,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.7)",
-                marginBottom: "6px",
-              }}
+        {/* Divider */}
+        <div
+          style={{ height: "1px", background: "#e5e7eb", margin: "0 16px" }}
+        />
+
+        {/* Next Prayer — keep green accent, remove heavy shadow/border */}
+        {nextPrayer && (
+          <div className="px-4 pt-4 pb-2">
+            <div
+              className="rounded-2xl p-4"
+              style={{ background: "oklch(0.40 0.13 147)" }}
             >
-              NEXT PRAYER
-            </p>
-            <div className="flex items-end justify-between">
-              <div>
-                <p
-                  style={{
-                    fontSize: "1.8rem",
-                    fontWeight: 800,
-                    color: "white",
-                    lineHeight: 1,
-                    marginBottom: "2px",
-                  }}
-                >
-                  {nextPrayer.name}
-                </p>
-                <p
-                  style={{
-                    fontFamily:
-                      "'Scheherazade New', 'Noto Naskh Arabic', serif",
-                    fontSize: "1.1rem",
-                    color: "oklch(0.85 0.14 78)",
-                    direction: "rtl",
-                    marginBottom: "10px",
-                  }}
-                >
-                  {nextPrayer.arabic}
-                </p>
-                {/* Soon badge */}
-                <span
-                  className="inline-flex items-center gap-1 rounded-full px-3 py-1"
-                  style={{
-                    background: "oklch(0.72 0.12 78)",
-                    color: "oklch(0.22 0.08 147)",
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                  }}
-                >
-                  🕌 Soon
-                </span>
-              </div>
               <p
                 style={{
-                  fontSize: "2rem",
-                  fontWeight: 800,
-                  color: "white",
-                  lineHeight: 1,
+                  fontSize: "0.65rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.7)",
+                  marginBottom: "6px",
                 }}
               >
-                {nextPrayer.time}
+                NEXT PRAYER
               </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Today's Prayer Times */}
-        <div className="mx-4 mt-4">
-          <h3
-            className="font-bold text-sm mb-2"
-            style={{ color: "oklch(0.28 0.10 147)" }}
-          >
-            Today's Prayer Times
-          </h3>
-          <div className="grid grid-cols-2 gap-2.5">
-            {prayerTimes.map((prayer) => {
-              const isNext = prayer.name === nextPrayer.name;
-              return (
-                <div
-                  key={prayer.name}
-                  className="rounded-xl p-3 text-center"
-                  style={{
-                    background: isNext ? "oklch(0.40 0.13 147)" : "white",
-                    border: `1px solid ${
-                      isNext ? "oklch(0.35 0.11 147)" : "#e5e7eb"
-                    }`,
-                    boxShadow: isNext
-                      ? "0 4px 12px rgba(15,75,47,0.20)"
-                      : "0 1px 4px rgba(0,0,0,0.05)",
-                  }}
-                >
+              <div className="flex items-end justify-between">
+                <div>
                   <p
-                    className="font-bold text-sm"
                     style={{
-                      color: isNext
-                        ? "oklch(0.88 0.14 78)"
-                        : "oklch(0.28 0.10 147)",
+                      fontSize: "1.8rem",
+                      fontWeight: 800,
+                      color: "white",
+                      lineHeight: 1,
+                      marginBottom: "2px",
                     }}
                   >
-                    {prayer.name}
+                    {nextPrayer.name}
                   </p>
                   <p
                     style={{
                       fontFamily:
                         "'Scheherazade New', 'Noto Naskh Arabic', serif",
-                      fontSize: "0.85rem",
-                      color: isNext
-                        ? "rgba(255,255,255,0.75)"
-                        : "oklch(0.55 0.08 147)",
+                      fontSize: "1.1rem",
+                      color: "oklch(0.85 0.14 78)",
                       direction: "rtl",
-                      marginTop: "1px",
+                      marginBottom: "10px",
                     }}
                   >
-                    {prayer.arabic}
+                    {nextPrayer.arabic}
                   </p>
-                  <p
-                    className="font-semibold text-sm mt-1"
+                  {/* Soon badge */}
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full px-3 py-1"
                     style={{
-                      color: isNext ? "white" : "#374151",
+                      background: "oklch(0.72 0.12 78)",
+                      color: "oklch(0.22 0.08 147)",
+                      fontSize: "0.72rem",
+                      fontWeight: 700,
                     }}
                   >
-                    {prayer.time}
-                  </p>
+                    🕌 Soon
+                  </span>
                 </div>
-              );
-            })}
+                <p
+                  style={{
+                    fontSize: "2rem",
+                    fontWeight: 800,
+                    color: "white",
+                    lineHeight: 1,
+                  }}
+                >
+                  {nextPrayer.time}
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Latest Announcement */}
-        {announcements.length > 0 && (
-          <div className="mx-4 mt-4">
+        {/* Today's Prayer Times — flat rows, no individual borders/shadows */}
+        {enrichedTimes.length > 0 && (
+          <div className="px-4 pt-3 pb-2">
             <h3
-              className="font-bold text-sm mb-2"
+              className="font-bold text-sm mb-3"
+              style={{ color: "oklch(0.28 0.10 147)" }}
+            >
+              Today's Prayer Times
+            </h3>
+            <div className="grid grid-cols-2 gap-0">
+              {enrichedTimes.map((prayer, idx) => {
+                const isNext = nextPrayer?.name === prayer.name;
+                const isOdd = idx % 2 === 0;
+                return (
+                  <div
+                    key={prayer.name}
+                    className="p-3 text-center"
+                    style={{
+                      background: isNext
+                        ? "oklch(0.40 0.13 147)"
+                        : isOdd
+                          ? "#f9fafb"
+                          : "#f3f4f6",
+                      borderRadius: isNext ? "12px" : "0",
+                    }}
+                  >
+                    <p
+                      className="font-bold text-sm"
+                      style={{
+                        color: isNext
+                          ? "oklch(0.88 0.14 78)"
+                          : "oklch(0.28 0.10 147)",
+                      }}
+                    >
+                      {prayer.name}
+                    </p>
+                    <p
+                      style={{
+                        fontFamily:
+                          "'Scheherazade New', 'Noto Naskh Arabic', serif",
+                        fontSize: "0.85rem",
+                        color: isNext
+                          ? "rgba(255,255,255,0.75)"
+                          : "oklch(0.55 0.08 147)",
+                        direction: "rtl",
+                        marginTop: "1px",
+                      }}
+                    >
+                      {prayer.arabic}
+                    </p>
+                    <p
+                      className="font-semibold text-sm mt-1"
+                      style={{
+                        color: isNext ? "white" : "#374151",
+                      }}
+                    >
+                      {prayer.time}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Divider */}
+        {announcements.length > 0 && (
+          <div
+            style={{
+              height: "1px",
+              background: "#e5e7eb",
+              margin: "4px 16px 0",
+            }}
+          />
+        )}
+
+        {/* Latest Announcement — flat section, no box */}
+        {announcements.length > 0 && (
+          <div className="px-4 pt-4 pb-3">
+            <h3
+              className="font-bold text-sm mb-3"
               style={{ color: "oklch(0.28 0.10 147)" }}
             >
               Latest Notice
             </h3>
             <div
-              className="rounded-2xl p-4"
               style={{
-                background: "white",
-                border: "1px solid #e5e7eb",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                borderLeft: "3px solid oklch(0.72 0.12 78)",
+                paddingLeft: "12px",
               }}
             >
               <p

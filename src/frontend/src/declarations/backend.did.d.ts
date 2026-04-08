@@ -10,7 +10,38 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface _SERVICE {}
+export interface Announcement {
+  'id' : bigint,
+  'title' : string,
+  'body' : string,
+  'date' : string,
+}
+export interface MapCoords { 'lat' : number, 'lng' : number }
+export interface PrayerTime {
+  'name' : string,
+  'time' : string,
+  'arabic' : string,
+}
+export interface _SERVICE {
+  'addAnnouncement' : ActorMethod<
+    [string, string, string, string],
+    [] | [Announcement]
+  >,
+  'changePin' : ActorMethod<[string, string], boolean>,
+  'deleteAnnouncement' : ActorMethod<[string, bigint], boolean>,
+  'getAnnouncements' : ActorMethod<[], Array<Announcement>>,
+  'getContactPhone' : ActorMethod<[], string>,
+  'getMapCoords' : ActorMethod<[], MapCoords>,
+  'getPrayerTimes' : ActorMethod<[], Array<PrayerTime>>,
+  'setContactPhone' : ActorMethod<[string, string], boolean>,
+  'setMapCoords' : ActorMethod<[string, number, number], boolean>,
+  'updateAnnouncement' : ActorMethod<
+    [string, bigint, string, string, string],
+    boolean
+  >,
+  'updatePrayerTime' : ActorMethod<[string, string, string], boolean>,
+  'verifyPin' : ActorMethod<[string], boolean>,
+}
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];
 export declare const idlFactory: IDL.InterfaceFactory;

@@ -1,0 +1,13 @@
+// Version: 1.0.0
+type Announcement__674333181 =
+  {body : Text; date : Text; id : Nat; title : Text};
+type PrayerTime__512761134 = {arabic : Text; name : Text; time : Text};
+actor {
+  stable var adminPin : Text;
+  stable var announcements : [Announcement__674333181];
+  stable var contactPhone : Text;
+  stable var mapLat : Float;
+  stable var mapLng : Float;
+  stable var nextId : Nat;
+  stable var prayerTimes : [PrayerTime__512761134]
+};

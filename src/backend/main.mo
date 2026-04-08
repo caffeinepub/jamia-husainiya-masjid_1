@@ -1,8 +1,9 @@
-import Array "mo:base/Array";
-import Iter "mo:base/Iter";
-import Nat "mo:base/Nat";
-import Float "mo:base/Float";
-import Text "mo:base/Text";
+import Array "mo:core/Array";
+import Text "mo:core/Text";
+import Float "mo:core/Float";
+import Nat "mo:core/Nat";
+
+
 
 actor {
 
@@ -25,15 +26,15 @@ actor {
     time : Text;
   };
 
-  // --- Stable state ---
-  stable var announcements : [Announcement] = [];
-  stable var nextId : Nat = 1;
-  stable var contactPhone : Text = "+918958999299";
-  stable var mapLat : Float = 29.863646;
-  stable var mapLng : Float = 77.971577;
-  stable var adminPin : Text = "786";
+  // --- State ---
+  var announcements : [Announcement] = [];
+  var nextId : Nat = 1;
+  var contactPhone : Text = "+918958999299";
+  var mapLat : Float = 29.863646;
+  var mapLng : Float = 77.971577;
+  var adminPin : Text = "786";
 
-  stable var prayerTimes : [PrayerTime] = [
+  var prayerTimes : [PrayerTime] = [
     { name = "Fajr"; arabic = "\u{0627}\u{0644}\u{0641}\u{062C}\u{0631}"; time = "5:41 AM" },
     { name = "Zohar"; arabic = "\u{0627}\u{0644}\u{0638}\u{0647}\u{0631}"; time = "1:30 PM" },
     { name = "Asr"; arabic = "\u{0627}\u{0644}\u{0639}\u{0635}\u{0631}"; time = "5:15 PM" },
@@ -61,17 +62,17 @@ actor {
     announcements
   };
 
-  public func addAnnouncement(pin : Text, title : Text, body : Text, date : Text) : async Bool {
-    if (pin != adminPin) return false;
+  public func addAnnouncement(pin : Text, title : Text, body : Text, date : Text) : async ?Announcement {
+    if (pin != adminPin) return null;
     let newItem : Announcement = { id = nextId; title; body; date };
-    announcements := Array.append(announcements, [newItem]);
+    announcements := announcements.concat([newItem]);
     nextId += 1;
-    true
+    ?newItem
   };
 
   public func updateAnnouncement(pin : Text, id : Nat, title : Text, body : Text, date : Text) : async Bool {
     if (pin != adminPin) return false;
-    announcements := Array.map<Announcement, Announcement>(announcements, func(a) {
+    announcements := announcements.map(func(a : Announcement) : Announcement {
       if (a.id == id) { { id; title; body; date } } else { a }
     });
     true
@@ -79,7 +80,7 @@ actor {
 
   public func deleteAnnouncement(pin : Text, id : Nat) : async Bool {
     if (pin != adminPin) return false;
-    announcements := Array.filter<Announcement>(announcements, func(a) { a.id != id });
+    announcements := announcements.filter(func(a : Announcement) : Bool { a.id != id });
     true
   };
 
@@ -107,13 +108,13 @@ actor {
   };
 
   // --- Prayer Times ---
-  public query func getPrayerTimes() : async [PrayerTime] {
+  public func getPrayerTimes() : async [PrayerTime] {
     prayerTimes
   };
 
   public func updatePrayerTime(pin : Text, name : Text, time : Text) : async Bool {
     if (pin != adminPin) return false;
-    prayerTimes := Array.map<PrayerTime, PrayerTime>(prayerTimes, func(p) {
+    prayerTimes := prayerTimes.map(func(p : PrayerTime) : PrayerTime {
       if (p.name == name) { { name = p.name; arabic = p.arabic; time } } else { p }
     });
     true

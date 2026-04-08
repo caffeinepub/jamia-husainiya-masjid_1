@@ -89,10 +89,209 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface backendInterface {
+export interface Announcement {
+    id: bigint;
+    title: string;
+    body: string;
+    date: string;
 }
+export interface MapCoords {
+    lat: number;
+    lng: number;
+}
+export interface PrayerTime {
+    name: string;
+    time: string;
+    arabic: string;
+}
+export interface backendInterface {
+    addAnnouncement(pin: string, title: string, body: string, date: string): Promise<Announcement | null>;
+    changePin(oldPin: string, newPin: string): Promise<boolean>;
+    deleteAnnouncement(pin: string, id: bigint): Promise<boolean>;
+    getAnnouncements(): Promise<Array<Announcement>>;
+    getContactPhone(): Promise<string>;
+    getMapCoords(): Promise<MapCoords>;
+    getPrayerTimes(): Promise<Array<PrayerTime>>;
+    setContactPhone(pin: string, phone: string): Promise<boolean>;
+    setMapCoords(pin: string, lat: number, lng: number): Promise<boolean>;
+    updateAnnouncement(pin: string, id: bigint, title: string, body: string, date: string): Promise<boolean>;
+    updatePrayerTime(pin: string, name: string, time: string): Promise<boolean>;
+    verifyPin(pin: string): Promise<boolean>;
+}
+import type { Announcement as _Announcement } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async addAnnouncement(arg0: string, arg1: string, arg2: string, arg3: string): Promise<Announcement | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addAnnouncement(arg0, arg1, arg2, arg3);
+                return from_candid_opt_n1(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addAnnouncement(arg0, arg1, arg2, arg3);
+            return from_candid_opt_n1(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async changePin(arg0: string, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.changePin(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.changePin(arg0, arg1);
+            return result;
+        }
+    }
+    async deleteAnnouncement(arg0: string, arg1: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteAnnouncement(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteAnnouncement(arg0, arg1);
+            return result;
+        }
+    }
+    async getAnnouncements(): Promise<Array<Announcement>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAnnouncements();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAnnouncements();
+            return result;
+        }
+    }
+    async getContactPhone(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getContactPhone();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getContactPhone();
+            return result;
+        }
+    }
+    async getMapCoords(): Promise<MapCoords> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMapCoords();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMapCoords();
+            return result;
+        }
+    }
+    async getPrayerTimes(): Promise<Array<PrayerTime>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getPrayerTimes();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getPrayerTimes();
+            return result;
+        }
+    }
+    async setContactPhone(arg0: string, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setContactPhone(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setContactPhone(arg0, arg1);
+            return result;
+        }
+    }
+    async setMapCoords(arg0: string, arg1: number, arg2: number): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setMapCoords(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setMapCoords(arg0, arg1, arg2);
+            return result;
+        }
+    }
+    async updateAnnouncement(arg0: string, arg1: bigint, arg2: string, arg3: string, arg4: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateAnnouncement(arg0, arg1, arg2, arg3, arg4);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateAnnouncement(arg0, arg1, arg2, arg3, arg4);
+            return result;
+        }
+    }
+    async updatePrayerTime(arg0: string, arg1: string, arg2: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updatePrayerTime(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updatePrayerTime(arg0, arg1, arg2);
+            return result;
+        }
+    }
+    async verifyPin(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyPin(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyPin(arg0);
+            return result;
+        }
+    }
+}
+function from_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Announcement]): Announcement | null {
+    return value.length === 0 ? null : value[0];
 }
 export interface CreateActorOptions {
     agent?: Agent;

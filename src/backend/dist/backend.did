@@ -1,0 +1,34 @@
+type PrayerTime = 
+ record {
+   arabic: text;
+   name: text;
+   time: text;
+ };
+type MapCoords = 
+ record {
+   lat: float64;
+   lng: float64;
+ };
+type Announcement = 
+ record {
+   body: text;
+   date: text;
+   id: nat;
+   title: text;
+ };
+service : {
+  addAnnouncement: (pin: text, title: text, body: text, date: text) ->
+   (opt Announcement);
+  changePin: (oldPin: text, newPin: text) -> (bool);
+  deleteAnnouncement: (pin: text, id: nat) -> (bool);
+  getAnnouncements: () -> (vec Announcement) query;
+  getContactPhone: () -> (text) query;
+  getMapCoords: () -> (MapCoords) query;
+  getPrayerTimes: () -> (vec PrayerTime);
+  setContactPhone: (pin: text, phone: text) -> (bool);
+  setMapCoords: (pin: text, lat: float64, lng: float64) -> (bool);
+  updateAnnouncement: (pin: text, id: nat, title: text, body: text, date:
+   text) -> (bool);
+  updatePrayerTime: (pin: text, name: text, time: text) -> (bool);
+  verifyPin: (pin: text) -> (bool) query;
+}

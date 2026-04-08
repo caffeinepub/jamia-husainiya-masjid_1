@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { AppData } from "../App";
 import type { Announcement, backendInterface } from "../backend.d";
@@ -63,12 +63,18 @@ export default function AdminPanel({
     Object.fromEntries(appData.prayerTimes.map((p) => [p.name, p.time])),
   );
 
+  // Track the last name that was saved so we can show confirmed value after re-fetch
+  const lastSavedPrayerRef = useRef<{ name: string; time: string } | null>(
+    null,
+  );
+
   // Keep prayerEdits in sync with appData.prayerTimes whenever backend data refreshes
   useEffect(() => {
     if (appData.prayerTimes.length > 0 && !appData.isLoading) {
       setPrayerEdits(
         Object.fromEntries(appData.prayerTimes.map((p) => [p.name, p.time])),
       );
+      lastSavedPrayerRef.current = null;
     }
   }, [appData.prayerTimes, appData.isLoading]);
 
@@ -140,7 +146,11 @@ export default function AdminPanel({
   };
 
   const handleSaveEdit = async () => {
-    if (!pin || editingId === null || !actor) return;
+    if (!pin || editingId === null || !actor) {
+      if (!actor)
+        toast.error("Connection not ready. Please wait and try again.");
+      return;
+    }
     setSavingAnnouncement(true);
     try {
       const ok = await actor.updateAnnouncement(
@@ -153,10 +163,12 @@ export default function AdminPanel({
       if (ok) {
         setEditingId(null);
         onSaved();
+        toast.success("Notice update ho gayi");
       } else {
-        toast.error("Failed to update announcement");
+        toast.error("Failed to update announcement — wrong PIN?");
       }
-    } catch {
+    } catch (err) {
+      console.error("updateAnnouncement error:", err);
       toast.error("Error updating announcement");
     } finally {
       setSavingAnnouncement(false);
@@ -164,16 +176,22 @@ export default function AdminPanel({
   };
 
   const handleDelete = async (id: bigint) => {
-    if (!pin || !actor) return;
+    if (!pin || !actor) {
+      if (!actor)
+        toast.error("Connection not ready. Please wait and try again.");
+      return;
+    }
     setDeletingId(id);
     try {
       const ok = await actor.deleteAnnouncement(pin, id);
       if (ok) {
         onSaved();
+        toast.success("Notice delete ho gayi");
       } else {
         toast.error("Failed to delete announcement");
       }
-    } catch {
+    } catch (err) {
+      console.error("deleteAnnouncement error:", err);
       toast.error("Error deleting announcement");
     } finally {
       setDeletingId(null);
@@ -181,27 +199,33 @@ export default function AdminPanel({
   };
 
   const handleAddAnnouncement = async () => {
-    if (!pin || !newTitle.trim() || !newBody.trim() || !actor) {
+    if (!pin || !newTitle.trim() || !newBody.trim()) {
       toast.error("Title and body are required");
+      return;
+    }
+    if (!actor) {
+      toast.error("Connection not ready. Please wait and try again.");
       return;
     }
     setSavingAnnouncement(true);
     try {
-      const ok = await actor.addAnnouncement(
+      const result = await actor.addAnnouncement(
         pin,
         newTitle.trim(),
         newBody.trim(),
         newDate,
       );
-      if (ok) {
+      if (result !== null) {
         setNewTitle("");
         setNewBody("");
         setNewDate(new Date().toISOString().split("T")[0]);
         onSaved();
+        toast.success("Notice add ho gayi");
       } else {
-        toast.error("Failed to add announcement");
+        toast.error("Failed to add announcement — wrong PIN?");
       }
-    } catch {
+    } catch (err) {
+      console.error("addAnnouncement error:", err);
       toast.error("Error adding announcement");
     } finally {
       setSavingAnnouncement(false);
@@ -209,16 +233,22 @@ export default function AdminPanel({
   };
 
   const handleSavePhone = async () => {
-    if (!pin || !actor) return;
+    if (!pin) return;
+    if (!actor) {
+      toast.error("Connection not ready. Please wait and try again.");
+      return;
+    }
     setSavingPhone(true);
     try {
       const ok = await actor.setContactPhone(pin, editPhone.trim());
       if (ok) {
         onSaved();
+        toast.success("Phone number update ho gaya");
       } else {
-        toast.error("Failed to update phone");
+        toast.error("Failed to update phone — wrong PIN?");
       }
-    } catch {
+    } catch (err) {
+      console.error("setContactPhone error:", err);
       toast.error("Error updating phone");
     } finally {
       setSavingPhone(false);
@@ -226,7 +256,11 @@ export default function AdminPanel({
   };
 
   const handleSaveMap = async () => {
-    if (!pin || !actor) return;
+    if (!pin) return;
+    if (!actor) {
+      toast.error("Connection not ready. Please wait and try again.");
+      return;
+    }
     const lat = Number.parseFloat(editLat);
     const lng = Number.parseFloat(editLng);
     if (Number.isNaN(lat) || Number.isNaN(lng)) {
@@ -238,10 +272,12 @@ export default function AdminPanel({
       const ok = await actor.setMapCoords(pin, lat, lng);
       if (ok) {
         onSaved();
+        toast.success("Map coordinates update ho gaye");
       } else {
-        toast.error("Failed to update map coordinates");
+        toast.error("Failed to update map coordinates — wrong PIN?");
       }
-    } catch {
+    } catch (err) {
+      console.error("setMapCoords error:", err);
       toast.error("Error updating coordinates");
     } finally {
       setSavingMap(false);
@@ -249,23 +285,33 @@ export default function AdminPanel({
   };
 
   const handleSavePrayerTime = async (name: string) => {
-    if (!pin || !actor) return;
-    const time = prayerEdits[name];
-    if (!time?.trim()) {
+    if (!pin) return;
+    if (!actor) {
+      toast.error("Connection not ready. Please wait and try again.");
+      return;
+    }
+    const time = prayerEdits[name]?.trim();
+    if (!time) {
       toast.error("Time cannot be empty");
       return;
     }
     setSavingPrayer(name);
     try {
-      const ok = await actor.updatePrayerTime(pin, name, time.trim());
+      const ok = await actor.updatePrayerTime(pin, name, time);
       if (ok) {
+        // Immediately update local state so the input shows the saved value
+        // even before the backend re-fetch completes
+        lastSavedPrayerRef.current = { name, time };
+        setPrayerEdits((prev) => ({ ...prev, [name]: time }));
+        // Trigger re-fetch from backend to confirm persistence
         onSaved();
-        toast.success(`${name} ka waqt update ho gaya`);
+        toast.success(`${name} ka waqt save ho gaya: ${time}`);
       } else {
-        toast.error("Failed to update prayer time");
+        toast.error(`${name} save nahi hua — wrong PIN?`);
       }
-    } catch {
-      toast.error("Error updating prayer time");
+    } catch (err) {
+      console.error("updatePrayerTime error:", err);
+      toast.error(`Error saving ${name} time`);
     } finally {
       setSavingPrayer(null);
     }
@@ -306,7 +352,22 @@ export default function AdminPanel({
                   "linear-gradient(135deg, oklch(0.40 0.13 147) 0%, oklch(0.30 0.10 147) 100%)",
               }}
             >
-              <h2 className="text-white font-bold text-base">⚙️ Admin Panel</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-white font-bold text-base">
+                  ⚙️ Admin Panel
+                </h2>
+                {pin && !actor && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full animate-pulse"
+                    style={{
+                      background: "rgba(255,200,0,0.25)",
+                      color: "oklch(0.88 0.14 78)",
+                    }}
+                  >
+                    Connecting…
+                  </span>
+                )}
+              </div>
               <button
                 type="button"
                 data-ocid="admin.close_button"
@@ -396,24 +457,24 @@ export default function AdminPanel({
                 </div>
               ) : (
                 /* Admin Tabs */
-                <Tabs defaultValue="announcements" className="flex flex-col">
+                <Tabs defaultValue="prayer" className="flex flex-col">
                   <TabsList
                     className="mx-4 mt-3 grid grid-cols-4 flex-shrink-0"
                     style={{ background: "oklch(0.93 0.01 147)" }}
                   >
-                    <TabsTrigger
-                      data-ocid="admin.announcements.tab"
-                      value="announcements"
-                      className="text-xs"
-                    >
-                      Notices
-                    </TabsTrigger>
                     <TabsTrigger
                       data-ocid="admin.prayer.tab"
                       value="prayer"
                       className="text-xs"
                     >
                       Namaz
+                    </TabsTrigger>
+                    <TabsTrigger
+                      data-ocid="admin.announcements.tab"
+                      value="announcements"
+                      className="text-xs"
+                    >
+                      Notices
                     </TabsTrigger>
                     <TabsTrigger
                       data-ocid="admin.contact.tab"
@@ -430,6 +491,125 @@ export default function AdminPanel({
                       Map
                     </TabsTrigger>
                   </TabsList>
+
+                  {/* Prayer Times Tab — shown first as it is the primary issue */}
+                  <TabsContent
+                    value="prayer"
+                    className="px-4 pb-4 space-y-3 mt-3"
+                  >
+                    {/* Instructions */}
+                    <div
+                      className="rounded-xl p-3 space-y-1"
+                      style={{
+                        background: "oklch(0.96 0.03 147)",
+                        border: "1px solid oklch(0.88 0.06 147)",
+                      }}
+                    >
+                      <p
+                        className="text-xs font-semibold"
+                        style={{ color: "oklch(0.28 0.10 147)" }}
+                      >
+                        نماز کا وقت بدلیں
+                      </p>
+                      <p
+                        className="text-xs"
+                        style={{ color: "oklch(0.45 0.08 147)" }}
+                      >
+                        وقت لکھیں (مثال: 5:41 AM) اور Save دبائیں
+                      </p>
+                    </div>
+
+                    {/* Actor not ready warning */}
+                    {!actor && (
+                      <div
+                        className="rounded-xl p-3 flex items-center gap-2"
+                        style={{
+                          background: "oklch(0.98 0.03 78)",
+                          border: "1px solid oklch(0.88 0.10 78)",
+                        }}
+                      >
+                        <Loader2
+                          size={14}
+                          className="animate-spin flex-shrink-0"
+                          style={{ color: "oklch(0.55 0.12 78)" }}
+                        />
+                        <p
+                          className="text-xs"
+                          style={{ color: "oklch(0.45 0.10 78)" }}
+                        >
+                          Backend connect ho raha hai… thoda wait karein
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Loading state */}
+                    {appData.isLoading ? (
+                      <div className="space-y-2">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                          <div
+                            key={i}
+                            className="h-10 rounded-xl animate-pulse"
+                            style={{ background: "oklch(0.94 0.02 147)" }}
+                          />
+                        ))}
+                      </div>
+                    ) : appData.prayerTimes.length === 0 ? (
+                      <p
+                        className="text-center text-sm py-4"
+                        style={{ color: "oklch(0.55 0.02 147)" }}
+                      >
+                        No prayer times loaded yet
+                      </p>
+                    ) : (
+                      appData.prayerTimes.map((prayer, index) => (
+                        <div
+                          key={prayer.name}
+                          data-ocid={`admin.prayer.item.${index + 1}`}
+                          className="flex items-center gap-2"
+                        >
+                          <Label
+                            className="text-sm font-semibold w-28 flex-shrink-0"
+                            style={{ color: "oklch(0.30 0.10 147)" }}
+                          >
+                            {prayer.name}
+                          </Label>
+                          <Input
+                            data-ocid={`admin.prayer.time.input.${index + 1}`}
+                            value={prayerEdits[prayer.name] ?? prayer.time}
+                            onChange={(e) =>
+                              setPrayerEdits((prev) => ({
+                                ...prev,
+                                [prayer.name]: e.target.value,
+                              }))
+                            }
+                            placeholder="e.g. 5:41 AM"
+                            className="text-sm flex-1"
+                            disabled={savingPrayer === prayer.name}
+                          />
+                          <Button
+                            data-ocid={`admin.prayer.save_button.${index + 1}`}
+                            size="sm"
+                            onClick={() => handleSavePrayerTime(prayer.name)}
+                            disabled={savingPrayer === prayer.name || !actor}
+                            style={{
+                              background: actor
+                                ? "oklch(0.40 0.13 147)"
+                                : "oklch(0.75 0.04 147)",
+                              color: "white",
+                              minWidth: "52px",
+                            }}
+                            className="text-xs"
+                          >
+                            {savingPrayer === prayer.name ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Save className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </TabsContent>
 
                   {/* Announcements Tab */}
                   <TabsContent
@@ -475,7 +655,7 @@ export default function AdminPanel({
                       <Button
                         data-ocid="admin.notice.add_button"
                         onClick={handleAddAnnouncement}
-                        disabled={savingAnnouncement}
+                        disabled={savingAnnouncement || !actor}
                         size="sm"
                         className="w-full text-sm"
                         style={{
@@ -619,69 +799,6 @@ export default function AdminPanel({
                     )}
                   </TabsContent>
 
-                  {/* Prayer Times Tab */}
-                  <TabsContent
-                    value="prayer"
-                    className="px-4 pb-4 space-y-3 mt-3"
-                  >
-                    <p
-                      className="text-xs font-semibold"
-                      style={{ color: "oklch(0.40 0.13 147)" }}
-                    >
-                      نماز کا وقت بدلیں (مثال: 5:41 AM)
-                    </p>
-                    <p
-                      className="text-xs"
-                      style={{ color: "oklch(0.55 0.05 147)" }}
-                    >
-                      ہر نماز کا وقت لکھ کر Save بٹن دبائیں
-                    </p>
-                    {appData.prayerTimes.map((prayer, index) => (
-                      <div
-                        key={prayer.name}
-                        data-ocid={`admin.prayer.item.${index + 1}`}
-                        className="flex items-center gap-2"
-                      >
-                        <Label
-                          className="text-sm font-semibold w-28 flex-shrink-0"
-                          style={{ color: "oklch(0.30 0.10 147)" }}
-                        >
-                          {prayer.name}
-                        </Label>
-                        <Input
-                          data-ocid={`admin.prayer.time.input.${index + 1}`}
-                          value={prayerEdits[prayer.name] ?? prayer.time}
-                          onChange={(e) =>
-                            setPrayerEdits((prev) => ({
-                              ...prev,
-                              [prayer.name]: e.target.value,
-                            }))
-                          }
-                          placeholder="e.g. 5:41 AM"
-                          className="text-sm flex-1"
-                        />
-                        <Button
-                          data-ocid={`admin.prayer.save_button.${index + 1}`}
-                          size="sm"
-                          onClick={() => handleSavePrayerTime(prayer.name)}
-                          disabled={savingPrayer === prayer.name}
-                          style={{
-                            background: "oklch(0.40 0.13 147)",
-                            color: "white",
-                            minWidth: "52px",
-                          }}
-                          className="text-xs"
-                        >
-                          {savingPrayer === prayer.name ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Save className="h-3 w-3" />
-                          )}
-                        </Button>
-                      </div>
-                    ))}
-                  </TabsContent>
-
                   {/* Contact Tab */}
                   <TabsContent
                     value="contact"
@@ -695,13 +812,13 @@ export default function AdminPanel({
                         data-ocid="admin.contact.phone.input"
                         value={editPhone}
                         onChange={(e) => setEditPhone(e.target.value)}
-                        placeholder="+91 89589 99299"
+                        placeholder="+918958999299"
                         type="tel"
                       />
                       <Button
                         data-ocid="admin.contact.save_button"
                         onClick={handleSavePhone}
-                        disabled={savingPhone}
+                        disabled={savingPhone || !actor}
                         className="w-full font-semibold"
                         style={{
                           background: "oklch(0.40 0.13 147)",
@@ -740,7 +857,7 @@ export default function AdminPanel({
                       <Button
                         data-ocid="admin.map.save_button"
                         onClick={handleSaveMap}
-                        disabled={savingMap}
+                        disabled={savingMap || !actor}
                         className="w-full font-semibold"
                         style={{
                           background: "oklch(0.40 0.13 147)",

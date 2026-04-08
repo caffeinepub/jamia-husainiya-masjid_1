@@ -54,16 +54,16 @@ export default function NoticeScreen({
 
       {/* Announcements list */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-3 space-y-3"
+        className="flex-1 overflow-y-auto"
         style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
       >
         {isLoading ? (
-          <div data-ocid="notice.loading_state" className="space-y-3">
+          <div data-ocid="notice.loading_state">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="rounded-2xl p-4 bg-white"
-                style={{ border: "1px solid #e5e7eb" }}
+                className="px-5 py-4"
+                style={{ borderBottom: "1px solid #e5e7eb" }}
               >
                 <Skeleton className="h-4 w-3/4 mb-2" />
                 <Skeleton className="h-3 w-full mb-1" />
@@ -99,51 +99,52 @@ export default function NoticeScreen({
             <div
               key={ann.id.toString()}
               data-ocid={`notice.item.${index + 1}`}
-              className="rounded-2xl overflow-hidden"
-              style={{
-                background: "white",
-                border: "1px solid #e5e7eb",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-              }}
+              style={{ borderBottom: "1px solid #e5e7eb" }}
             >
-              {/* Gold top accent bar */}
-              <div
-                style={{ height: "3px", background: "oklch(0.72 0.12 78)" }}
-              />
-              <div className="p-4">
-                <div className="flex items-start gap-2 mb-2">
-                  <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: "oklch(0.93 0.05 147)" }}
-                  >
-                    <Megaphone
-                      size={13}
-                      style={{ color: "oklch(0.40 0.13 147)" }}
-                    />
-                  </div>
-                  <h3
-                    className="font-bold text-sm leading-snug flex-1"
-                    style={{ color: "oklch(0.22 0.08 147)" }}
-                  >
-                    {ann.title}
-                  </h3>
-                </div>
-                <p
-                  className="text-xs leading-relaxed"
-                  style={{ color: "#6b7280" }}
-                >
-                  {ann.body}
-                </p>
-                <span
-                  className="inline-block mt-3 text-xs px-2.5 py-1 rounded-full font-semibold"
+              {/* Gold left accent bar */}
+              <div className="flex items-stretch">
+                <div
                   style={{
-                    background: "oklch(0.93 0.05 78)",
-                    color: "oklch(0.50 0.10 78)",
-                    border: "1px solid oklch(0.85 0.08 78)",
+                    width: "3px",
+                    flexShrink: 0,
+                    background: "oklch(0.72 0.12 78)",
                   }}
-                >
-                  📅 {ann.date}
-                </span>
+                />
+                <div className="flex-1 px-4 py-4">
+                  <div className="flex items-start gap-2 mb-2">
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                      style={{ background: "oklch(0.93 0.05 147)" }}
+                    >
+                      <Megaphone
+                        size={13}
+                        style={{ color: "oklch(0.40 0.13 147)" }}
+                      />
+                    </div>
+                    <h3
+                      className="font-bold text-sm leading-snug flex-1"
+                      style={{ color: "oklch(0.22 0.08 147)" }}
+                    >
+                      {ann.title}
+                    </h3>
+                  </div>
+                  <p
+                    className="text-xs leading-relaxed"
+                    style={{ color: "#6b7280" }}
+                  >
+                    {ann.body}
+                  </p>
+                  <span
+                    className="inline-block mt-3 text-xs px-2.5 py-1 rounded-full font-semibold"
+                    style={{
+                      background: "oklch(0.93 0.05 78)",
+                      color: "oklch(0.50 0.10 78)",
+                      border: "1px solid oklch(0.85 0.08 78)",
+                    }}
+                  >
+                    📅 {ann.date}
+                  </span>
+                </div>
               </div>
             </div>
           ))

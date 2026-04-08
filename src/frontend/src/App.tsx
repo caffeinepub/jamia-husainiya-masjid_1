@@ -1,7 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   Announcement,
   MapCoords,
@@ -56,6 +55,51 @@ const DEFAULT_PRAYER_TIMES: PrayerTime[] = [
   },
 ];
 
+// Canonical prayer order — ensures user panel always shows prayers in a fixed order
+// regardless of what order the backend returns them in
+const PRAYER_ORDER = ["Fajr", "Zohar", "Asr", "Maghrib", "Isha", "Khutba Juma"];
+
+// Arabic names mapped by prayer name — used to fill in if backend omits arabic field
+const ARABIC_BY_NAME: Record<string, string> = {
+  Fajr: "\u0627\u0644\u0641\u062c\u0631",
+  Zohar: "\u0627\u0644\u0638\u0647\u0631",
+  Asr: "\u0627\u0644\u0639\u0635\u0631",
+  Maghrib: "\u0627\u0644\u0645\u063a\u0631\u0628",
+  Isha: "\u0627\u0644\u0639\u0634\u0627\u0621",
+  "Khutba Juma": "\u0627\u0644\u062c\u0645\u0639\u0629",
+};
+
+/**
+ * Merge backend prayer times with defaults.
+ * - Preserves the canonical PRAYER_ORDER so Home/Namaz always display in correct sequence
+ * - Picks up the saved `time` from backend by matching `name` field
+ * - Falls back to DEFAULT_PRAYER_TIMES entry if a prayer is missing from backend
+ */
+function mergePrayerTimes(backendTimes: PrayerTime[]): PrayerTime[] {
+  // Build a map keyed by prayer name for O(1) lookup
+  const byName = new Map<string, PrayerTime>();
+  for (const pt of backendTimes) {
+    byName.set(pt.name, pt);
+  }
+
+  return PRAYER_ORDER.map((name) => {
+    const fromBackend = byName.get(name);
+    const defaultEntry =
+      DEFAULT_PRAYER_TIMES.find((d) => d.name === name) ??
+      DEFAULT_PRAYER_TIMES[0];
+    if (fromBackend) {
+      return {
+        name: fromBackend.name,
+        // Always use the canonical Arabic from our map so it never gets corrupted
+        arabic: ARABIC_BY_NAME[name] ?? fromBackend.arabic,
+        // Use backend time — this is the value the admin saved
+        time: fromBackend.time,
+      };
+    }
+    return defaultEntry;
+  });
+}
+
 export default function App() {
   const { actor: rawActor, isFetching: actorFetching } = useActor();
   const actor = rawActor as unknown as backendInterface | null;
@@ -64,22 +108,33 @@ export default function App() {
   const [adminPin, setAdminPin] = useState<string | null>(null);
   const [appData, setAppData] = useState<AppData>({
     announcements: [],
-    phone: "+91 89589 99299",
+    phone: "+918958999299",
     coords: { lat: 29.863646, lng: 77.971577 },
     prayerTimes: DEFAULT_PRAYER_TIMES,
     isLoading: true,
   });
 
+  // Keep a stable ref to actor so polling interval always has the latest
+  const actorRef = useRef<backendInterface | null>(null);
+  useEffect(() => {
+    actorRef.current = actor;
+  }, [actor]);
+
   const fetchData = useCallback(async () => {
-    if (!actor) return;
+    const currentActor = actorRef.current;
+    if (!currentActor) return;
     setAppData((prev) => ({ ...prev, isLoading: true }));
     try {
-      const [announcements, phone, coords, prayerTimes] = await Promise.all([
-        actor.getAnnouncements(),
-        actor.getContactPhone(),
-        actor.getMapCoords(),
-        actor.getPrayerTimes(),
+      const [announcements, phone, coords, rawPrayerTimes] = await Promise.all([
+        currentActor.getAnnouncements(),
+        currentActor.getContactPhone(),
+        currentActor.getMapCoords(),
+        currentActor.getPrayerTimes(),
       ]);
+
+      // Merge and re-order prayer times so user panel always shows correct values
+      const prayerTimes = mergePrayerTimes(rawPrayerTimes);
+
       setAppData({
         announcements,
         phone,
@@ -91,13 +146,33 @@ export default function App() {
       console.error("Failed to load data", err);
       setAppData((prev) => ({ ...prev, isLoading: false }));
     }
-  }, [actor]);
+  }, []); // stable — uses actorRef internally
 
+  // Fetch once when actor is ready
   useEffect(() => {
     if (actor && !actorFetching) {
       fetchData();
     }
   }, [actor, actorFetching, fetchData]);
+
+  // Poll every 5 seconds — shorter interval helps the user panel pick up
+  // changes shortly after the admin saves, even if the first post-save fetch
+  // returns a cached response from the agent.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (actorRef.current) {
+        fetchData();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
+  // Re-fetch fresh data whenever user switches to home or namaz tab
+  useEffect(() => {
+    if ((activeTab === "home" || activeTab === "namaz") && actorRef.current) {
+      fetchData();
+    }
+  }, [activeTab, fetchData]);
 
   const switchTab = (tab: TabId) => {
     if (tab === "admin") {
@@ -111,8 +186,12 @@ export default function App() {
   const closeAdmin = () => setAdminOpen(false);
 
   const handleAdminSaved = () => {
-    fetchData();
-    toast.success("Changes saved successfully");
+    // After admin saves, wait 500 ms for the backend update call to commit,
+    // then fetch fresh prayer times. A second fetch at 2 s ensures we get
+    // the latest data even if the agent returns a stale cached response on
+    // the first call.
+    setTimeout(() => fetchData(), 500);
+    setTimeout(() => fetchData(), 2000);
   };
 
   const screenVariants = {
@@ -123,7 +202,11 @@ export default function App() {
 
   const screens: Record<Exclude<TabId, "admin">, React.ReactNode> = {
     home: (
-      <HomeScreen announcements={appData.announcements} phone={appData.phone} />
+      <HomeScreen
+        announcements={appData.announcements}
+        phone={appData.phone}
+        prayerTimes={appData.prayerTimes}
+      />
     ),
     namaz: (
       <NamazScreen

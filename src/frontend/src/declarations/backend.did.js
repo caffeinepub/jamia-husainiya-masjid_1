@@ -8,10 +8,95 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const idlService = IDL.Service({});
+export const Announcement = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'body' : IDL.Text,
+  'date' : IDL.Text,
+});
+export const MapCoords = IDL.Record({
+  'lat' : IDL.Float64,
+  'lng' : IDL.Float64,
+});
+export const PrayerTime = IDL.Record({
+  'name' : IDL.Text,
+  'time' : IDL.Text,
+  'arabic' : IDL.Text,
+});
+
+export const idlService = IDL.Service({
+  'addAnnouncement' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Opt(Announcement)],
+      [],
+    ),
+  'changePin' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+  'deleteAnnouncement' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
+  'getAnnouncements' : IDL.Func([], [IDL.Vec(Announcement)], ['query']),
+  'getContactPhone' : IDL.Func([], [IDL.Text], ['query']),
+  'getMapCoords' : IDL.Func([], [MapCoords], ['query']),
+  'getPrayerTimes' : IDL.Func([], [IDL.Vec(PrayerTime)], []),
+  'setContactPhone' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+  'setMapCoords' : IDL.Func(
+      [IDL.Text, IDL.Float64, IDL.Float64],
+      [IDL.Bool],
+      [],
+    ),
+  'updateAnnouncement' : IDL.Func(
+      [IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Bool],
+      [],
+    ),
+  'updatePrayerTime' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Bool], []),
+  'verifyPin' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+});
 
 export const idlInitArgs = [];
 
-export const idlFactory = ({ IDL }) => { return IDL.Service({}); };
+export const idlFactory = ({ IDL }) => {
+  const Announcement = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'body' : IDL.Text,
+    'date' : IDL.Text,
+  });
+  const MapCoords = IDL.Record({ 'lat' : IDL.Float64, 'lng' : IDL.Float64 });
+  const PrayerTime = IDL.Record({
+    'name' : IDL.Text,
+    'time' : IDL.Text,
+    'arabic' : IDL.Text,
+  });
+  
+  return IDL.Service({
+    'addAnnouncement' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Opt(Announcement)],
+        [],
+      ),
+    'changePin' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+    'deleteAnnouncement' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
+    'getAnnouncements' : IDL.Func([], [IDL.Vec(Announcement)], ['query']),
+    'getContactPhone' : IDL.Func([], [IDL.Text], ['query']),
+    'getMapCoords' : IDL.Func([], [MapCoords], ['query']),
+    'getPrayerTimes' : IDL.Func([], [IDL.Vec(PrayerTime)], []),
+    'setContactPhone' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+    'setMapCoords' : IDL.Func(
+        [IDL.Text, IDL.Float64, IDL.Float64],
+        [IDL.Bool],
+        [],
+      ),
+    'updateAnnouncement' : IDL.Func(
+        [IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Bool],
+        [],
+      ),
+    'updatePrayerTime' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Bool],
+        [],
+      ),
+    'verifyPin' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  });
+};
 
 export const init = ({ IDL }) => { return []; };

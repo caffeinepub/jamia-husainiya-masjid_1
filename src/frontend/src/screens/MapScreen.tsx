@@ -55,22 +55,16 @@ export default function MapScreen({
 
       {/* Content */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+        className="flex-1 overflow-y-auto"
         style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
       >
-        {/* Map iframe */}
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{
-            border: "2px solid oklch(0.72 0.12 78)",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-          }}
-        >
+        {/* Map iframe — edge to edge, no rounded corners or heavy shadow */}
+        <div style={{ borderBottom: "2px solid oklch(0.72 0.12 78)" }}>
           {isLoading ? (
             <div
               data-ocid="map.loading_state"
-              className="flex items-center justify-center bg-white"
-              style={{ height: "320px" }}
+              className="flex items-center justify-center"
+              style={{ height: "320px", background: "#f3f4f6" }}
             >
               <div className="text-center">
                 <div
@@ -100,33 +94,30 @@ export default function MapScreen({
         </div>
 
         {/* Get Directions button */}
-        <a
-          data-ocid="map.directions.primary_button"
-          href={directionsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full rounded-2xl py-3.5 font-bold text-sm transition-all duration-200 active:scale-95"
-          style={{
-            background: "oklch(0.72 0.12 78)",
-            color: "oklch(0.22 0.08 147)",
-            boxShadow: "0 4px 12px rgba(200,169,81,0.28)",
-            border: "1px solid oklch(0.55 0.09 78)",
-            textDecoration: "none",
-          }}
-        >
-          <Navigation size={16} />
-          Get Directions
-        </a>
-
-        {/* Address card */}
         <div
-          className="rounded-2xl p-4"
-          style={{
-            background: "white",
-            border: "1px solid #e5e7eb",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-          }}
+          className="px-4 py-4"
+          style={{ borderBottom: "1px solid #e5e7eb" }}
         >
+          <a
+            data-ocid="map.directions.primary_button"
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full rounded-2xl py-3.5 font-bold text-sm transition-all duration-200 active:scale-95"
+            style={{
+              background: "oklch(0.72 0.12 78)",
+              color: "oklch(0.22 0.08 147)",
+              border: "1px solid oklch(0.55 0.09 78)",
+              textDecoration: "none",
+            }}
+          >
+            <Navigation size={16} />
+            Get Directions
+          </a>
+        </div>
+
+        {/* Address — flat section */}
+        <div className="px-5 py-4">
           <p
             className="font-bold text-sm mb-1"
             style={{ color: "oklch(0.40 0.13 147)" }}
